@@ -1,4 +1,4 @@
-// lib/presentation/widgets/xumm_terminated_dialog.dart
+// lib\modules\widgets\alert\xumm_terminated_error_dialog.dart
 
 import 'package:flutter/material.dart';
 import 'dart:async';

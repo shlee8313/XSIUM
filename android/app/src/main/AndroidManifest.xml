@@ -16,7 +16,7 @@
 
     <application
         android:name="${applicationName}"
-        android:label="Xsium Chat"
+        android:label="Xsium"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="true"
         android:fullBackupContent="true">

@@ -1,4 +1,4 @@
-// lib/presentation/widgets/error_dialog.dart
+// lib\modules\widgets\alert\error_dialog.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
 // import 'package:flutter/material.dart';

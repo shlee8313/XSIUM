@@ -1,4 +1,4 @@
-// lib/presentation/widgets/login_interrupt_dialog.dart
+// lib\modules\widgets\alert\login_interrupt_error_dialog.dart
 
 import 'package:flutter/material.dart';
 import 'dart:async';

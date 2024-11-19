@@ -1,8 +1,10 @@
 // lib/presentation/screens/login/qr_login_dialog.dart
 
 import 'package:flutter/material.dart';
-import '../../controller/login_controller.dart';
-import '../home_screen.dart';
+
+import '../../../config/theme.dart';
+import '../controllers/login_controller.dart';
+import '../../home/home_screen.dart';
 
 class QRLoginDialog extends StatefulWidget {
   final LoginController controller;
@@ -81,59 +83,93 @@ class _QRLoginDialogState extends State<QRLoginDialog> {
     };
   }
 
+  Future<bool> _showExitDialog() async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return await showDialog<bool>(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: colorScheme.surface,
+              title: Text(
+                'Cancel Login',
+                style: theme.textTheme.titleLarge,
+              ),
+              content: Text(
+                'Do you want to cancel the QR login?',
+                style: theme.textTheme.bodyLarge,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context, false);
+                  },
+                  child: Text(
+                    'Continue',
+                    style: TextStyle(color: colorScheme.primary),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    widget.controller.cleanupLoginState();
+                    Navigator.pop(context, true);
+                  },
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(color: colorScheme.primary),
+                  ),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        final bool shouldPop = await showDialog<bool>(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  backgroundColor: Colors.white,
-                  title: const Text('Cancel Login'),
-                  content: const Text('Do you want to cancel the QR login?'),
-                  actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context, false);
-                      },
-                      child: const Text('Continue'),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        widget.controller.cleanupLoginState();
-                        Navigator.pop(context, true);
-                      },
-                      child: const Text('Cancel'),
-                    ),
-                  ],
-                );
-              },
-            ) ??
-            false;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-        return shouldPop;
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldPop = await _showExitDialog();
+        if (shouldPop && context.mounted) {
+          Navigator.of(context).pop();
+        }
       },
       child: AlertDialog(
-        backgroundColor: Colors.white,
-        title: const Text('QR Code Login'),
+        backgroundColor: colorScheme.surface,
+        title: Text(
+          'QR Code Login',
+          style: theme.textTheme.titleLarge,
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-                'Scan the QR code below with the XUMM app on another device.'),
+            Text(
+              'Scan the QR code below with the XUMM app on another device.',
+              style: theme.textTheme.bodyLarge,
+            ),
             const SizedBox(height: 16),
             if (widget.controller.isLoading &&
                 widget.controller.qrImageUrl == null)
-              const SizedBox(
+              SizedBox(
                 width: 200,
                 height: 200,
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: colorScheme.primary,
+                  ),
+                ),
               )
             else if (widget.controller.qrImageUrl != null)
               Container(
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(color: colorScheme.surfaceContainer),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Image.network(
@@ -151,6 +187,7 @@ class _QRLoginDialogState extends State<QRLoginDialog> {
                               ? loadingProgress.cumulativeBytesLoaded /
                                   loadingProgress.expectedTotalBytes!
                               : null,
+                          color: colorScheme.primary,
                         ),
                       ),
                     );
@@ -165,7 +202,10 @@ class _QRLoginDialogState extends State<QRLoginDialog> {
               widget.controller.cleanupLoginState();
               Navigator.pop(context);
             },
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: colorScheme.primary),
+            ),
           ),
         ],
       ),

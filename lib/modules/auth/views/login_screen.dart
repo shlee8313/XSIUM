@@ -1,12 +1,13 @@
 // lib/presentation/screens/login/login_screen.dart
 
 import 'package:flutter/material.dart';
-import '../../controller/login_controller.dart';
-import '../../widgets/login_interrupt_error_dialog.dart';
-import '../../widgets/xumm_terminated_error_dialog.dart';
-import '../../widgets/error_dialog.dart';
-import './qr_login_dialog.dart';
-import '../home_screen.dart';
+import '../../../config/theme.dart';
+import '../controllers/login_controller.dart';
+import '../../widgets/alert/login_interrupt_error_dialog.dart';
+import '../../widgets/alert/xumm_terminated_error_dialog.dart';
+import '../../widgets/alert/error_dialog.dart';
+import 'qr_login_dialog.dart';
+import '../../home/home_screen.dart';
 import 'dart:async';
 
 class LoginScreen extends StatefulWidget {
@@ -153,8 +154,11 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: Stack(
         children: [
           SafeArea(
@@ -166,34 +170,9 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                   children: [
                     Text(
                       'Welcome to Xsium',
-                      style:
-                          Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                      style: theme.textTheme.headlineLarge,
                     ),
                     const SizedBox(height: 60),
-                    // 기존 버튼
-                    /*
-                    ElevatedButton(
-                      onPressed: () {
-                        _controller.cleanupLoginState();
-                        _controller.loginWithLocalXumm();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        minimumSize: const Size(220, 70),
-                      ),
-                      child: const Text(
-                        'Login on This Device',
-                        style: TextStyle(fontSize: 20),
-                      ),
-                    ),
-                    */
-                    // 새로운 버튼 (로딩 상태 포함)
                     ElevatedButton(
                       onPressed: _isLoading
                           ? null
@@ -202,28 +181,32 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                               _controller.loginWithLocalXumm();
                             },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue,
-                        foregroundColor: Colors.white,
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
+                        disabledBackgroundColor:
+                            colorScheme.primary.withOpacity(0.7),
+                        disabledForegroundColor:
+                            colorScheme.onPrimary.withOpacity(0.7),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         minimumSize: const Size(220, 70),
-                        // 로딩 중일 때 버튼 비활성화
-                        disabledBackgroundColor: Colors.blue.withOpacity(0.7),
-                        disabledForegroundColor: Colors.white70,
                       ),
                       child: _isLoading
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 24,
                               height: 24,
                               child: CircularProgressIndicator(
-                                color: Colors.white,
+                                color: colorScheme.onPrimary,
                                 strokeWidth: 2,
                               ),
                             )
-                          : const Text(
+                          : Text(
                               'Login on This Device',
-                              style: TextStyle(fontSize: 20),
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: colorScheme.onPrimary,
+                              ),
                             ),
                     ),
                     const SizedBox(height: 30),
@@ -272,15 +255,19 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Colors.blueAccent),
+                        foregroundColor: colorScheme.primary,
+                        side: BorderSide(color: colorScheme.primary),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         minimumSize: const Size(220, 70),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Login on Another Device',
-                        style: TextStyle(fontSize: 18),
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: colorScheme.primary,
+                        ),
                       ),
                     ),
                   ],

@@ -4,8 +4,8 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../services/xumm_service.dart';
-import '../../core/session/user_session.dart';
+import '../../../services/xumm_service.dart';
+import '../../../core/session/user_session.dart';
 
 class LoginController {
   final XummService _xummService = XummService();
