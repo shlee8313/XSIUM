@@ -1,7 +1,7 @@
 // lib/presentation/widgets/settings/chat_room_settings_sheet.dart
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import '../../core/controllers/theme_controller.dart';
+// import 'package:get/get.dart';
+// import '../../core/controllers/theme_controller.dart';
 
 class ChatRoomSettingsSheet extends StatelessWidget {
   final String userName;

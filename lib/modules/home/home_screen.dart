@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:io';
 import 'dart:async'; // 추가: Timer를 위한 import
 import 'dart:developer' as developer;
 import '../../../core/session/user_session.dart';
@@ -157,22 +158,49 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Future<bool> _onWillPop() async {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('앱 종료'),
-            content: const Text('앱을 종료하시겠습니까?'),
+            backgroundColor: colorScheme.surface,
+            title: Text(
+              '앱 종료',
+              style: theme.textTheme.titleLarge,
+            ),
+            content: Text(
+              '앱을 종료하시겠습니까?',
+              style: theme.textTheme.bodyLarge,
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('취소'),
+                child: Text(
+                  '취소',
+                  style: TextStyle(color: colorScheme.primary),
+                ),
               ),
               TextButton(
                 onPressed: () async {
-                  Navigator.of(context).pop(true);
-                  SystemNavigator.pop();
+                  // 세션 정리
+                  await _userSession.clear();
+                  _sessionCheckTimer?.cancel();
+
+                  // 로그인 화면으로 이동
+                  if (context.mounted) {
+                    await Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  }
                 },
-                child: const Text('종료'),
+                child: Text(
+                  '종료',
+                  style: TextStyle(color: colorScheme.primary),
+                ),
               ),
             ],
           ),
