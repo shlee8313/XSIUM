@@ -20,6 +20,7 @@ import '../widgets/badges/new_requests_badge.dart';
 // import '../settings/chat_room_settings_sheet.dart';
 import '../settings/common_app_bar.dart';
 import '../../../config/theme.dart';
+import '../../core/controllers/language_controller.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userAddress;
@@ -35,6 +36,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final themeController = Get.find<ThemeController>();
+  final languageController = Get.find<LanguageController>();
   final _userSession = UserSession();
   bool _isReady = false;
   bool _isLoggingOut = false;
@@ -134,8 +136,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
       if (!wasSessionValid && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('세션이 만료되었습니다. 다시 로그인해주세요.'),
+          SnackBar(
+            content: Text('session_expired'.tr),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -144,8 +146,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       developer.log('Error during logout: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('로그아웃 중 오류가 발생했습니다.'),
+          SnackBar(
+            content: Text('logout_error_message'.tr),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -161,51 +163,53 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: colorScheme.surface,
-            title: Text(
-              '앱 종료',
-              style: theme.textTheme.titleLarge,
+    bool? shouldExit = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // 바깥 영역 터치로 닫히지 않도록
+      builder: (context) => AlertDialog(
+        backgroundColor: colorScheme.surface,
+        title: Text(
+          'exit_title'.tr,
+          style: theme.textTheme.titleLarge,
+        ),
+        content: Text(
+          'exit_message'.tr,
+          style: theme.textTheme.bodyLarge,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'cancel'.tr,
+              style: TextStyle(color: colorScheme.primary),
             ),
-            content: Text(
-              '앱을 종료하시겠습니까?',
-              style: theme.textTheme.bodyLarge,
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text(
-                  '취소',
-                  style: TextStyle(color: colorScheme.primary),
-                ),
-              ),
-              TextButton(
-                onPressed: () async {
-                  // 세션 정리
-                  await _userSession.clear();
-                  _sessionCheckTimer?.cancel();
-
-                  // 로그인 화면으로 이동
-                  if (context.mounted) {
-                    await Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                      (route) => false,
-                    );
-                  }
-                },
-                child: Text(
-                  '종료',
-                  style: TextStyle(color: colorScheme.primary),
-                ),
-              ),
-            ],
           ),
-        ) ??
-        false;
+          TextButton(
+            onPressed: () async {
+              // 세션 정리
+              await _userSession.clear();
+              _sessionCheckTimer?.cancel();
+
+              // 로그인 화면으로 이동
+              if (context.mounted) {
+                await Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => const LoginScreen(),
+                  ),
+                  (route) => false,
+                );
+              }
+            },
+            child: Text(
+              'exit'.tr,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    return shouldExit ?? false;
   }
 
   @override

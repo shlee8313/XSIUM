@@ -8,6 +8,11 @@ class ThemeController extends GetxController {
   static const String _themeKey = 'theme_mode';
   late SharedPreferences _prefs;
   var isDarkMode = false.obs;
+  // 애니메이션을 위한 임시 상태
+  var isAnimatingToDark = false.obs;
+// themeMode getter 추가
+  ThemeMode get themeMode =>
+      isDarkMode.value ? ThemeMode.dark : ThemeMode.light;
 
   @override
   void onInit() {
@@ -16,9 +21,18 @@ class ThemeController extends GetxController {
   }
 
   Future<void> _loadTheme() async {
-    _prefs = await SharedPreferences.getInstance();
-    isDarkMode.value = _prefs.getBool(_themeKey) ?? false;
-    _updateTheme();
+    try {
+      _prefs = await SharedPreferences.getInstance();
+      isDarkMode.value = _prefs.getBool(_themeKey) ?? false;
+      isAnimatingToDark.value = isDarkMode.value;
+    } catch (e) {
+      debugPrint('Error loading theme: $e');
+    }
+  }
+
+  void handleThemeChange(bool isDark) async {
+    isDarkMode.value = isDark;
+    await _prefs.setBool(_themeKey, isDark);
   }
 
   Future<void> toggleTheme() async {
@@ -28,6 +42,7 @@ class ThemeController extends GetxController {
   }
 
   void _updateTheme() {
-    Get.changeThemeMode(isDarkMode.value ? ThemeMode.dark : ThemeMode.light);
+    Get.changeThemeMode(
+        themeMode); // isDarkMode.value ? ThemeMode.dark : ThemeMode.light 대신 getter 사용
   }
 }

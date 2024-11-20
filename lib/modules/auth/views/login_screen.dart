@@ -1,6 +1,8 @@
 // lib/presentation/screens/login/login_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'dart:async';
 import '../../../config/theme.dart';
 import '../controllers/login_controller.dart';
 import '../../widgets/alert/login_interrupt_error_dialog.dart';
@@ -8,7 +10,6 @@ import '../../widgets/alert/xumm_terminated_error_dialog.dart';
 import '../../widgets/alert/error_dialog.dart';
 import 'qr_login_dialog.dart';
 import '../../home/home_screen.dart';
-import 'dart:async';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,12 +19,14 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
+  // 개선된 상태 관리
   final LoginController _controller = LoginController();
-  bool _showLoginInterruptError = false;
-  bool _showXummTerminated = false;
-  bool _showError = false;
-  String _errorMessage = '';
-  bool _isLoading = false;
+  final RxBool _showLoginInterruptError = false.obs;
+  final RxBool _showXummTerminated = false.obs;
+  final RxBool _showError = false.obs;
+  final RxString _errorMessage = ''.obs;
+  final RxBool _isLoading = false.obs;
+
   @override
   void initState() {
     super.initState();
@@ -32,124 +35,89 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
     _controller.checkXummInstallation();
   }
 
-  // 기존 컨트롤러 설정
-  /*
   void _setupController() {
     _controller.onLoadingChanged = (value) {
-      if (mounted) setState(() {});
+      if (mounted) _isLoading.value = value;
     };
 
     _controller.onXummOpenedChanged = (value) {
-      if (mounted) setState(() {});
-    };
-
-    _controller.onError = (message) {
-      if (mounted) _showError(message);
+      if (mounted) _isLoading.value = false;
     };
 
     _controller.onLoginSuccess = (account) {
       if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) => HomeScreen(userAddress: account),
-          ),
-          (route) => false,
-        );
-      }
-    };
-
-    _controller.onLoginInterruption = () {
-      if (mounted) {
-        _handleLoginInterruption();
-      }
-    };
-  }
-  */
-
-  // 새로운 컨트롤러 설정
-  void _setupController() {
-    _controller.onLoadingChanged = (value) {
-      if (mounted) {
-        setState(() {
-          _isLoading = value;
-        });
-      }
-    };
-
-    _controller.onXummOpenedChanged = (value) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false; // Xumm이 열리면 로딩 중단
-        });
-      }
-    };
-
-    _controller.onLoginSuccess = (account) {
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                HomeScreen(userAddress: account),
-            transitionDuration: Duration.zero, // 전환 애니메이션 제거
-            reverseTransitionDuration: Duration.zero,
-          ),
+        Get.off(
+          () => HomeScreen(userAddress: account),
+          transition: Transition.fadeIn,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
         );
       }
     };
 
     _controller.onShowLoginInterruptError = () {
       if (mounted) {
-        setState(() {
-          _showLoginInterruptError = true;
-        });
-        Timer(const Duration(seconds: 3), () {
-          if (mounted) {
-            setState(() {
-              _showLoginInterruptError = false;
-            });
-          }
+        _showLoginInterruptError.value = true;
+        Future.delayed(const Duration(seconds: 3), () {
+          if (mounted) _showLoginInterruptError.value = false;
         });
       }
     };
 
     _controller.onShowXummTerminated = () {
       if (mounted) {
-        setState(() {
-          _showXummTerminated = true;
-        });
-        Timer(const Duration(seconds: 2), () {
-          if (mounted) {
-            setState(() {
-              _showXummTerminated = false;
-            });
-          }
+        _showXummTerminated.value = true;
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) _showXummTerminated.value = false;
         });
       }
     };
 
     _controller.onShowError = (message) {
       if (mounted) {
-        setState(() {
-          _showError = true;
-          _errorMessage = message;
-        });
-        Timer(const Duration(seconds: 2), () {
-          if (mounted) {
-            setState(() {
-              _showError = false;
-            });
-          }
+        _errorMessage.value = message;
+        _showError.value = true;
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) _showError.value = false;
         });
       }
     };
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
+  void _showQRLoginDialog() {
+    Get.dialog(
+      QRLoginDialog(
+        controller: _controller,
+        onLoginInterruptError: (value) {
+          _showLoginInterruptError.value = value;
+          Future.delayed(const Duration(seconds: 3), () {
+            if (mounted) {
+              _showLoginInterruptError.value = false;
+            }
+          });
+        },
+        onXummTerminated: (value) {
+          _showXummTerminated.value = value;
+          Future.delayed(const Duration(seconds: 3), () {
+            if (mounted) {
+              _showXummTerminated.value = false;
+            }
+          });
+        },
+        onError: (show, message) {
+          _errorMessage.value = message;
+          _showError.value = show;
+          Future.delayed(const Duration(seconds: 3), () {
+            if (mounted) {
+              _showError.value = false;
+            }
+          });
+        },
+      ),
+      barrierDismissible: false,
+      transitionDuration: const Duration(milliseconds: 200),
+      transitionCurve: Curves.easeInOut,
+    );
   }
 
   @override
@@ -169,91 +137,49 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Welcome to Xsium',
+                      'Welcome to XSIUM',
                       style: theme.textTheme.headlineLarge,
                     ),
                     const SizedBox(height: 60),
-                    ElevatedButton(
-                      onPressed: _isLoading
-                          ? null
-                          : () {
-                              _controller.cleanupLoginState();
-                              _controller.loginWithLocalXumm();
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colorScheme.primary,
-                        foregroundColor: colorScheme.onPrimary,
-                        disabledBackgroundColor:
-                            colorScheme.primary.withOpacity(0.7),
-                        disabledForegroundColor:
-                            colorScheme.onPrimary.withOpacity(0.7),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        minimumSize: const Size(220, 70),
-                      ),
-                      child: _isLoading
-                          ? SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: colorScheme.onPrimary,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Text(
-                              'Login on This Device',
-                              style: TextStyle(
-                                fontSize: 20,
-                                color: colorScheme.onPrimary,
-                              ),
+                    Obx(() => ElevatedButton(
+                          onPressed: _isLoading.value
+                              ? null
+                              : () {
+                                  _controller.cleanupLoginState();
+                                  _controller.loginWithLocalXumm();
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorScheme.primary,
+                            foregroundColor: colorScheme.onPrimary,
+                            disabledBackgroundColor: colorScheme.primary
+                                .withAlpha(178), // 70% opacity
+                            disabledForegroundColor: colorScheme.onPrimary
+                                .withAlpha(178), // 70% opacity
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                    ),
+                            minimumSize: const Size(220, 70),
+                          ),
+                          child: _isLoading.value
+                              ? SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: colorScheme.onPrimary,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  'login_this_device'.tr,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    color: colorScheme.onPrimary,
+                                  ),
+                                ),
+                        )),
                     const SizedBox(height: 30),
                     OutlinedButton(
-                      onPressed: () => showDialog(
-                        context: context,
-                        builder: (context) => QRLoginDialog(
-                          controller: _controller,
-                          onLoginInterruptError: (value) {
-                            setState(() {
-                              _showLoginInterruptError = value;
-                            });
-                            Timer(const Duration(seconds: 3), () {
-                              if (mounted) {
-                                setState(() {
-                                  _showLoginInterruptError = false;
-                                });
-                              }
-                            });
-                          },
-                          onXummTerminated: (value) {
-                            setState(() {
-                              _showXummTerminated = value;
-                            });
-                            Timer(const Duration(seconds: 3), () {
-                              if (mounted) {
-                                setState(() {
-                                  _showXummTerminated = false;
-                                });
-                              }
-                            });
-                          },
-                          onError: (show, message) {
-                            setState(() {
-                              _showError = show;
-                              _errorMessage = message;
-                            });
-                            Timer(const Duration(seconds: 3), () {
-                              if (mounted) {
-                                setState(() {
-                                  _showError = false;
-                                });
-                              }
-                            });
-                          },
-                        ),
-                      ),
+                      onPressed: () => _showQRLoginDialog(),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: colorScheme.primary,
                         side: BorderSide(color: colorScheme.primary),
@@ -263,7 +189,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
                         minimumSize: const Size(220, 70),
                       ),
                       child: Text(
-                        'Login on Another Device',
+                        'login_other_device'.tr,
                         style: TextStyle(
                           fontSize: 18,
                           color: colorScheme.primary,
@@ -275,61 +201,71 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
               ),
             ),
           ),
-          if (_showLoginInterruptError)
-            LoginInterruptErrorDialog(
-              isOpen: _showLoginInterruptError,
-              onClose: () {
-                setState(() {
-                  _showLoginInterruptError = false;
-                });
-              },
-            ),
-          if (_showXummTerminated)
-            XummTerminatedDialog(
-              isOpen: _showXummTerminated,
-              onClose: () {
-                setState(() {
-                  _showXummTerminated = false;
-                });
-              },
-            ),
-          if (_showError)
-            ErrorDialog(
-              message: _errorMessage,
-              onClose: () {
-                setState(() {
-                  _showError = false;
-                });
-              },
-            ),
+          Obx(() => Stack(
+                children: [
+                  if (_showLoginInterruptError.value)
+                    LoginInterruptErrorDialog(
+                      isOpen: _showLoginInterruptError.value,
+                      onClose: () => _showLoginInterruptError.value = false,
+                    ),
+                  if (_showXummTerminated.value)
+                    XummTerminatedDialog(
+                      isOpen: _showXummTerminated.value,
+                      onClose: () => _showXummTerminated.value = false,
+                    ),
+                  if (_showError.value)
+                    ErrorDialog(
+                      message: _errorMessage.value,
+                      onClose: () => _showError.value = false,
+                    ),
+                ],
+              )),
         ],
       ),
     );
   }
 
   @override
+  void dispose() {
+    _controller.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    _showLoginInterruptError.close();
+    _showXummTerminated.close();
+    _showError.close();
+    _errorMessage.close();
+    _isLoading.close();
+    super.dispose();
+  }
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed) {
-      if (_controller.isLoading) {
-        // 로딩 중일 때만 인터럽트 다이얼로그 표시
-        setState(() {
-          _showLoginInterruptError = true;
-        });
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) {
-            setState(() {
-              _showLoginInterruptError = false;
-            });
-          }
-        });
-      }
-    } else if (state == AppLifecycleState.paused) {
-      setState(() {
-        _showLoginInterruptError = false;
-        _showXummTerminated = false;
-        _showError = false;
-      });
+
+    if (!mounted) return;
+
+    switch (state) {
+      case AppLifecycleState.resumed:
+        if (_controller.isLoading) {
+          _showLoginInterruptError.value = true;
+          Future.delayed(const Duration(seconds: 2), () {
+            if (mounted) {
+              _showLoginInterruptError.value = false;
+            }
+          });
+        }
+        break;
+      case AppLifecycleState.paused:
+        _showLoginInterruptError.value = false;
+        _showXummTerminated.value = false;
+        _showError.value = false;
+        _errorMessage.value = '';
+        break;
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+        break;
+      case AppLifecycleState.detached:
+        _controller.cleanupLoginState();
+        break;
     }
   }
 }

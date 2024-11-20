@@ -8,10 +8,10 @@ class ErrorDialog extends StatefulWidget {
   final VoidCallback onClose;
 
   const ErrorDialog({
-    Key? key,
+    super.key,
     required this.message,
     required this.onClose,
-  }) : super(key: key);
+  });
 
   @override
   State<ErrorDialog> createState() => _ErrorDialogState();
@@ -52,7 +52,7 @@ class _ErrorDialogState extends State<ErrorDialog> {
             margin: const EdgeInsets.symmetric(horizontal: 16),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Theme.of(context).dialogBackgroundColor,
+              color: Theme.of(context).primaryColor,
               borderRadius: BorderRadius.circular(16),
               boxShadow: const [
                 BoxShadow(
@@ -68,7 +68,7 @@ class _ErrorDialogState extends State<ErrorDialog> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: Colors.red.withAlpha(25),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(

@@ -1,7 +1,7 @@
 // lib/presentation/screens/login/qr_login_dialog.dart
 
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart';
 import '../../../config/theme.dart';
 import '../controllers/login_controller.dart';
 import '../../home/home_screen.dart';
@@ -93,11 +93,11 @@ class _QRLoginDialogState extends State<QRLoginDialog> {
             return AlertDialog(
               backgroundColor: colorScheme.surface,
               title: Text(
-                'Cancel Login',
+                'qr_login_cancel_title'.tr,
                 style: theme.textTheme.titleLarge,
               ),
               content: Text(
-                'Do you want to cancel the QR login?',
+                'qr_login_cancel_message'.tr,
                 style: theme.textTheme.bodyLarge,
               ),
               actions: [
@@ -106,7 +106,7 @@ class _QRLoginDialogState extends State<QRLoginDialog> {
                     Navigator.pop(context, false);
                   },
                   child: Text(
-                    'Continue',
+                    'Continue'.tr,
                     style: TextStyle(color: colorScheme.primary),
                   ),
                 ),
@@ -116,7 +116,7 @@ class _QRLoginDialogState extends State<QRLoginDialog> {
                     Navigator.pop(context, true);
                   },
                   child: Text(
-                    'Cancel',
+                    'Cancel'.tr,
                     style: TextStyle(color: colorScheme.primary),
                   ),
                 ),
@@ -144,14 +144,14 @@ class _QRLoginDialogState extends State<QRLoginDialog> {
       child: AlertDialog(
         backgroundColor: colorScheme.surface,
         title: Text(
-          'QR Code Login',
+          'qr_login_title'.tr,
           style: theme.textTheme.titleLarge,
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Scan the QR code below with the XUMM app on another device.',
+              'qr_login_instruction'.tr,
               style: theme.textTheme.bodyLarge,
             ),
             const SizedBox(height: 16),
@@ -203,7 +203,7 @@ class _QRLoginDialogState extends State<QRLoginDialog> {
               Navigator.pop(context);
             },
             child: Text(
-              'Cancel',
+              'Cancel'.tr,
               style: TextStyle(color: colorScheme.primary),
             ),
           ),

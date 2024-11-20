@@ -20,6 +20,19 @@ class AppTranslations extends Translations {
               'Scan the QR code below with the XUMM app on another device.',
           'login_error': 'Login failed. Please try again.',
 
+          // Login Errors
+          'login_incomplete':
+              'Login not completed.\nPlease complete login in Xaman.',
+          'xaman_connection_error':
+              'Communication with Xaman is not smooth.\nLogin has been cancelled.',
+
+          //log out
+          'logout': 'Logout',
+          'logout_title': 'Logout',
+          'logout_confirm_message': 'Are you sure you want to logout?',
+          'logout_error_message':
+              'An error occurred during logout. Please try again.',
+          'logout_success': 'Successfully logged out',
           // Home Screen
           'home': 'Home',
           'friends': 'Friends',
@@ -53,6 +66,16 @@ class AppTranslations extends Translations {
           'qr_login_title': 'QR 코드 로그인',
           'qr_login_instruction': '다른 기기의 XUMM 앱으로 아래 QR 코드를 스캔하세요.',
           'login_error': '로그인에 실패했습니다. 다시 시도해주세요.',
+          // 로그인 에러
+          'login_incomplete': '로그인이 완료되지 않았습니다.\nXaman에서 로그인을 완료해주세요',
+          'xaman_connection_error': 'Xaman과의 통신이 원활하지 않습니다.\n로그인이 취소되었습니다',
+
+          // 로그아웃 관련
+          'logout': '로그아웃',
+          'logout_title': '로그아웃',
+          'logout_confirm_message': '정말 로그아웃 하시겠습니까?',
+          'logout_error_message': '로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.',
+          'logout_success': '로그아웃되었습니다',
 
           // 홈 화면
           'home': '홈',
@@ -87,7 +110,16 @@ class AppTranslations extends Translations {
           'qr_login_title': 'QRコードログイン',
           'qr_login_instruction': '他の端末のXUMMアプリで以下のQRコードをスキャンしてください。',
           'login_error': 'ログインに失敗しました。もう一度お試しください。',
+          // ログインエラー
+          'login_incomplete': 'ログインが完了していません。\nXamanでログインを完了してください。',
+          'xaman_connection_error': 'Xamanとの通信が円滑ではありません。\nログインがキャンセルされました。',
 
+          // ログアウト関連
+          'logout': 'ログアウト',
+          'logout_title': 'ログアウト',
+          'logout_confirm_message': 'ログアウトしてもよろしいですか？',
+          'logout_error_message': 'ログアウト中にエラーが発生しました。もう一度お試しください。',
+          'logout_success': 'ログアウトしました',
           // ホーム画面
           'home': 'ホーム',
           'friends': '友達',
@@ -123,6 +155,20 @@ class AppTranslations extends Translations {
               'Escanea el código QR con la aplicación XUMM en otro dispositivo.',
           'login_error':
               'Error al iniciar sesión. Por favor, inténtalo de nuevo.',
+          // Errores de inicio de sesión
+          'login_incomplete':
+              'Inicio de sesión no completado.\nPor favor, complete el inicio de sesión en Xaman.',
+          'xaman_connection_error':
+              'La comunicación con Xaman no es fluida.\nSe ha cancelado el inicio de sesión.',
+
+          // Cierre de sesión
+          'logout': 'Cerrar sesión',
+          'logout_title': 'Cerrar sesión',
+          'logout_confirm_message':
+              '¿Estás seguro de que quieres cerrar sesión?',
+          'logout_error_message':
+              'Se produjo un error al cerrar sesión. Por favor, inténtalo de nuevo.',
+          'logout_success': 'Sesión cerrada correctamente',
 
           // Pantalla de inicio
           'home': 'Inicio',

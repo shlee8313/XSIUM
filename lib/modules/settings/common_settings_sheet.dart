@@ -21,7 +21,7 @@ class CommonSettingsSheet extends StatelessWidget {
     final languageController = Get.find<LanguageController>();
 
     return Scaffold(
-      backgroundColor: Colors.black.withAlpha(128),
+      // backgroundColor: Colors.black.withAlpha(128),
       body: Column(
         children: [
           Container(
@@ -79,9 +79,7 @@ class CommonSettingsSheet extends StatelessWidget {
                                     languageController.currentLanguage.value),
                                 style: theme.textTheme.bodyMedium,
                               )),
-                          onTap: () {
-                            // 보안 설정 화면으로 이동
-                          },
+                          onTap: () => _showLanguageSettings(context),
                         ),
                         _buildSettingsTile(
                           context,
@@ -146,6 +144,42 @@ class CommonSettingsSheet extends StatelessWidget {
         color: theme.colorScheme.onSurface.withOpacity(0.5),
       ),
       onTap: onTap,
+    );
+  }
+
+  void _showLanguageSettings(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 8, bottom: 16),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color:
+                      Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Expanded(
+                child: LanguageSettings(),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
