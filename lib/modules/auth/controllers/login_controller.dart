@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../services/xumm_service.dart';
 import '../../../core/session/user_session.dart';
@@ -138,7 +139,7 @@ class LoginController {
         throw Exception('Failed to launch XUMM');
       }
     } catch (e) {
-      await handleLoginFailure('XUMM 앱을 실행할 수 없습니다. 다시 시도해주세요.');
+      await handleLoginFailure('xumm_cannot_launch'.tr);
     }
   }
 
@@ -157,7 +158,7 @@ class LoginController {
 
       startPolling();
     } catch (e) {
-      await handleLoginFailure('QR 코드 생성 중 오류가 발생했습니다.');
+      await handleLoginFailure('qr_code_error'.tr);
     } finally {
       _setLoading(false);
     }
@@ -179,7 +180,7 @@ class LoginController {
 
     Timer(const Duration(seconds: warningThreshold), () {
       if (!_isCancelled && isXummOpened) {
-        onShowError?.call('로그인 시간이 곧 만료됩니다. 15초 남았습니다.');
+        onShowError?.call('login_expiry_warning'.tr);
       }
     });
 
@@ -226,7 +227,7 @@ class LoginController {
               // print('XUMM Error Status: ${status['status']}'); // 상태 로그
               // print('XUMM Error Message: ${status['message']}'); // 메시지 로그
               // print('Full XUMM Response: $status'); // 전체 응답 로그
-              await handleXummError(status['message'] ?? '알 수 없는 오류가 발생했습니다.');
+              await handleXummError(status['message'] ?? 'unknown_error'.tr);
             }
             break;
         }
@@ -234,7 +235,7 @@ class LoginController {
         retryCount++;
         if (retryCount >= 3) {
           timer.cancel();
-          await handleLoginFailure('로그인 시도 중 오류가 발생했습니다.');
+          await handleLoginFailure('login_attempt_error'.tr);
         }
       }
     });
@@ -258,7 +259,7 @@ class LoginController {
   void _handlePollingTimeout() {
     _timer?.cancel();
     _timeoutTimer?.cancel();
-    handleLoginFailure('로그인 시간이 만료되었습니다.');
+    handleLoginFailure('login_expired'.tr);
   }
 
   void _validateLoginData(Map<String, dynamic>? loginData) {
@@ -294,7 +295,7 @@ class LoginController {
       onLoginSuccess?.call(account);
       await platform.invokeMethod('handleLoginSuccess');
     } catch (e) {
-      onShowError?.call('로그인 처리 중 오류가 발생했습니다. 다시 시도해주세요.');
+      onShowError?.call('login_processing_error'.tr);
     } finally {
       cleanupLoginState();
     }

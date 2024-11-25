@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 // import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
@@ -132,15 +133,21 @@ class XummService {
 
       // XUMM API 상태 매핑
       if (meta['cancelled'] == true) {
-        return {'status': 'cancelled', 'message': '로그인이 취소되었습니다.'};
+        return {'status': 'cancelled', 'message': 'login_cancelled'.tr};
       } else if (meta['expired'] == true) {
-        return {'status': 'expired', 'message': '로그인 시간이 만료되었습니다.'};
+        return {'status': 'expired', 'message': 'login_expired'.tr};
       } else if (meta['invalid'] == true) {
-        return {'status': 'invalid', 'message': '잘못된 로그인 요청입니다.'};
+        return {'status': 'invalid', 'message': 'invalid_login_request'.tr};
       } else if (meta['user_cancelled'] == true) {
-        return {'status': 'user_cancelled', 'message': '사용자가 로그인을 취소했습니다.'};
+        return {
+          'status': 'user_cancelled',
+          'message': 'user_cancelled_login'.tr
+        };
       } else if (meta['server_error'] == true) {
-        return {'status': 'server_error', 'message': '서버 오류가 발생했습니다.'};
+        return {
+          'status': 'server_error',
+          'message': 'server_error_occurred'.tr
+        };
       }
 
       return {'status': meta['app_opened'] ? 'opened' : 'pending'};
