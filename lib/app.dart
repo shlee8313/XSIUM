@@ -42,7 +42,8 @@ class _XsiumChatAppState extends State<XsiumChatApp>
 
   Future<void> _initializeApp() async {
     try {
-      await Future.delayed(const Duration(milliseconds: 100));
+      // await Future.delayed(
+      //     const Duration(milliseconds: 100)); // 불필요한 delay 제거 가능
       if (!mounted) return;
 
       final sessionState = _userSession.getSessionState();
@@ -67,36 +68,26 @@ class _XsiumChatAppState extends State<XsiumChatApp>
       title: 'app_name'.tr,
       debugShowCheckedModeBanner: false,
       translations: AppTranslations(),
-      locale: Locale(
-        languageController.currentLanguage.split('_')[0],
-        languageController.currentLanguage.split('_')[1],
-      ),
+      // Language 설정 개선: 안정성 검사 추가
+      locale: _getLocale(),
       fallbackLocale: const Locale('en', 'US'),
       theme: AppTheme.lightTheme.copyWith(
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             elevation: 0,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 12,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
         textButtonTheme: TextButtonThemeData(
           style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
-          ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
         ),
       ),
       darkTheme: AppTheme.darkTheme,
       themeMode: themeController.themeMode,
-      home: !_isInitialized ? _buildLoadingScreen() : const LoginScreen(),
+      home: _isInitialized ? const LoginScreen() : _buildLoadingScreen(),
       builder: (context, child) {
         if (child == null) {
           return const LoginScreen();
@@ -138,6 +129,14 @@ class _XsiumChatAppState extends State<XsiumChatApp>
             ),
           ),
         ));
+  }
+
+  // Language 설정 안정성 개선
+  Locale _getLocale() {
+    final languageParts = languageController.currentLanguage.split('_');
+    return languageParts.length == 2
+        ? Locale(languageParts[0], languageParts[1])
+        : const Locale('en', 'US');
   }
 
   @override

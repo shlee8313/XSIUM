@@ -3,7 +3,14 @@
 import 'package:flutter/material.dart';
 
 class TimerBadge extends StatelessWidget {
-  const TimerBadge({super.key});
+  final String time;
+  final bool showDot;
+
+  const TimerBadge({
+    super.key,
+    required this.time,
+    this.showDot = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +20,7 @@ class TimerBadge extends StatelessWidget {
         vertical: 4,
       ),
       decoration: BoxDecoration(
-        color: Colors.orange.withOpacity(0.2),
+        color: Colors.orange..withAlpha(51), // 0.2 * 255 ≈ 51,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -26,12 +33,23 @@ class TimerBadge extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            '5:00',
+            time,
             style: TextStyle(
               color: Colors.orange[700],
               fontSize: 12,
             ),
           ),
+          if (showDot) ...[
+            const SizedBox(width: 4),
+            Container(
+              width: 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: Colors.orange[700],
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
         ],
       ),
     );

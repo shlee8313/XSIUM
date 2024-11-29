@@ -1,6 +1,7 @@
 // lib\modules\widgets\alert\error_dialog.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../../../config/theme.dart';
 // import 'package:flutter/material.dart';
 
 class ErrorDialog extends StatefulWidget {
@@ -27,7 +28,7 @@ class _ErrorDialogState extends State<ErrorDialog> {
   }
 
   void _startDismissTimer() {
-    _dismissTimer = Timer(const Duration(seconds: 2), () {
+    _dismissTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) {
         widget.onClose();
       }
@@ -42,6 +43,8 @@ class _ErrorDialogState extends State<ErrorDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Align(
       alignment: Alignment.bottomCenter,
       child: Padding(
@@ -49,16 +52,18 @@ class _ErrorDialogState extends State<ErrorDialog> {
         child: Material(
           color: Colors.transparent,
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
+            margin: const EdgeInsets.symmetric(horizontal: 8),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
+              color: colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
-                  color: Colors.black26,
+                  color: Theme.of(context)
+                      .shadowColor
+                      .withAlpha(51), // 0.2 * 255 ≈ 51,
                   blurRadius: 10.0,
-                  offset: Offset(0.0, 10.0),
+                  offset: const Offset(0.0, 10.0),
                 ),
               ],
             ),
@@ -68,12 +73,12 @@ class _ErrorDialogState extends State<ErrorDialog> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.red.withAlpha(25),
+                    color: AppColors.error..withAlpha(25), // 0.2 * 255 ≈ 51,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.error_outline_rounded,
-                    color: Colors.red,
+                    color: AppColors.error,
                     size: 32,
                   ),
                 ),
@@ -83,6 +88,7 @@ class _ErrorDialogState extends State<ErrorDialog> {
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
                       ),
                 ),
               ],

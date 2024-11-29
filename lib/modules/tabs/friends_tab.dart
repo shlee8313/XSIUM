@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 // import '../../core/controllers/theme_controller.dart';
 import '../friends/widgets/friend_list_tile.dart';
 import '../widgets/security/secure_avatar.dart';
+import '../widgets/base/optimized_list_view.dart';
 
 class FriendsTab extends StatelessWidget {
   final String userAddress;
@@ -14,18 +15,46 @@ class FriendsTab extends StatelessWidget {
     required this.userAddress,
   });
 
+  static const List<Map<String, dynamic>> _friends = [
+    {
+      'id': '1',
+      'name': 'Alice',
+      'status': '온라인',
+      'address': 'xumm_address_1',
+      'lastActive': '방금 전',
+    },
+    {
+      'id': '2',
+      'name': 'Bob',
+      'status': '오프라인',
+      'address': 'xumm_address_2',
+      'lastActive': '1시간 전',
+    },
+    {
+      'id': '3',
+      'name': 'Charlie',
+      'status': '자리비움',
+      'address': 'xumm_address_3',
+      'lastActive': '30분 전',
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return OptimizedListView(
+      pageKey: 'friend_list',
+      itemCount: _friends.length,
       itemBuilder: (context, index) {
+        final friend = _friends[index];
         return FriendListTile(
+          key: ValueKey('friend_${friend['id']}'),
           leading: const SecureAvatar(),
-          title: const Text('Friend Name'),
-          subtitle: const Row(
+          title: Text(friend['name']),
+          subtitle: Row(
             children: [
-              Icon(Icons.security, size: 12),
-              SizedBox(width: 4),
-              Text('안전한 친구'),
+              const Icon(Icons.security, size: 12),
+              const SizedBox(width: 4),
+              Flexible(child: Text(friend['status'])),
             ],
           ),
           trailing: Row(
@@ -33,11 +62,11 @@ class FriendsTab extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.sms_outlined),
-                onPressed: () => startChat(),
+                onPressed: () => _startChat(friend['address']),
               ),
               IconButton(
                 icon: const Icon(Icons.palette_outlined),
-                onPressed: () => startCanvas(),
+                onPressed: () => _startCanvas(friend['address']),
               ),
             ],
           ),
@@ -46,11 +75,11 @@ class FriendsTab extends StatelessWidget {
     );
   }
 
-  void startChat() {
-    // 채팅 시작 로직
+  void _startChat(String partnerAddress) {
+    debugPrint('Starting chat with: $partnerAddress');
   }
 
-  void startCanvas() {
-    // 캔버스 채팅 시작 로직
+  void _startCanvas(String partnerAddress) {
+    debugPrint('Starting canvas with: $partnerAddress');
   }
 }

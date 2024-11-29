@@ -1,6 +1,7 @@
 // lib/presentation/screens/login/login_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'dart:async';
 import '../../../config/theme.dart';
@@ -10,108 +11,109 @@ import '../../widgets/alert/xumm_terminated_error_dialog.dart';
 import '../../widgets/alert/error_dialog.dart';
 import 'qr_login_dialog.dart';
 import '../../home/home_screen.dart';
+import 'dart:developer' as developer;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
-  // 개선된 상태 관리
-  final LoginController _controller = LoginController();
-  final RxBool _showLoginInterruptError = false.obs;
-  final RxBool _showXummTerminated = false.obs;
-  final RxBool _showError = false.obs;
-  final RxString _errorMessage = ''.obs;
-  final RxBool _isLoading = false.obs;
+  late final LoginController _controller;
+  final ValueNotifier<bool> _isLoading = ValueNotifier(false);
+  final ValueNotifier<String> _errorMessage = ValueNotifier('');
+  final ValueNotifier<bool> _showLoginInterruptError = ValueNotifier(false);
+  final ValueNotifier<bool> _showXummTerminated = ValueNotifier(false);
+  final ValueNotifier<bool> _showError = ValueNotifier(false);
+
+  Timer? _stateResetTimer;
+  bool _disposed = false;
 
   @override
   void initState() {
     super.initState();
+    _initializeSecurity();
+    _initializeController();
     WidgetsBinding.instance.addObserver(this);
-    _setupController();
-    _controller.checkXummInstallation();
   }
 
-  void _setupController() {
-    _controller.onLoadingChanged = (value) {
-      if (mounted) _isLoading.value = value;
-    };
+  Future<void> _initializeSecurity() async {
+    // 스크린샷 방지
+    await SystemChannels.platform.invokeMethod<void>(
+      'SystemChrome.setPreventScreenCapture',
+      true,
+    );
+  }
 
-    _controller.onXummOpenedChanged = (value) {
-      if (mounted) _isLoading.value = false;
-    };
+  void _initializeController() {
+    _controller = Get.put(LoginController());
 
-    _controller.onLoginSuccess = (account) {
-      if (mounted) {
-        Get.off(
-          () => HomeScreen(userAddress: account),
-          transition: Transition.fadeIn,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_disposed) {
+        _controller.checkXummInstallation();
       }
-    };
+    });
 
-    _controller.onShowLoginInterruptError = () {
-      if (mounted) {
-        _showLoginInterruptError.value = true;
-        Future.delayed(const Duration(seconds: 3), () {
-          if (mounted) _showLoginInterruptError.value = false;
-        });
+    _setupControllerCallbacks();
+  }
+
+  void _setupControllerCallbacks() {
+    _controller
+      ..onLoadingChanged = (value) {
+        if (!_disposed) _isLoading.value = value;
       }
-    };
-
-    _controller.onShowXummTerminated = () {
-      if (mounted) {
-        _showXummTerminated.value = true;
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) _showXummTerminated.value = false;
-        });
+      ..onLoginSuccess = _handleLoginSuccess
+      ..onShowLoginInterruptError = () {
+        _showTemporaryDialog(_showLoginInterruptError);
       }
-    };
-
-    _controller.onShowError = (message) {
-      if (mounted) {
+      ..onShowXummTerminated = () {
+        _showTemporaryDialog(_showXummTerminated);
+      }
+      ..onShowError = (message) {
         _errorMessage.value = message;
-        _showError.value = true;
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted) _showError.value = false;
-        });
-      }
-    };
+        _showTemporaryDialog(_showError);
+      };
+  }
+
+  Future<void> _handleLoginSuccess(String account) async {
+    if (_disposed) return;
+
+    try {
+      await Get.off(
+        () => HomeScreen(userAddress: account),
+        transition: Transition.fadeIn,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } catch (e) {
+      developer.log('Error navigating to home screen: $e', error: e);
+      _errorMessage.value = 'navigation_error'.tr;
+      _showTemporaryDialog(_showError);
+    }
+  }
+
+  void _showTemporaryDialog(ValueNotifier<bool> dialogState,
+      {Duration duration = const Duration(seconds: 3)}) {
+    dialogState.value = true;
+    Future.delayed(duration, () {
+      if (!_disposed) dialogState.value = false;
+    });
   }
 
   void _showQRLoginDialog() {
+    if (_disposed) return;
+
     Get.dialog(
       QRLoginDialog(
         controller: _controller,
-        onLoginInterruptError: (value) {
-          _showLoginInterruptError.value = value;
-          Future.delayed(const Duration(seconds: 3), () {
-            if (mounted) {
-              _showLoginInterruptError.value = false;
-            }
-          });
-        },
-        onXummTerminated: (value) {
-          _showXummTerminated.value = value;
-          Future.delayed(const Duration(seconds: 3), () {
-            if (mounted) {
-              _showXummTerminated.value = false;
-            }
-          });
-        },
+        onLoginInterruptError: (value) =>
+            _showTemporaryDialog(_showLoginInterruptError),
+        onXummTerminated: (value) => _showTemporaryDialog(_showXummTerminated),
         onError: (show, message) {
           _errorMessage.value = message;
-          _showError.value = show;
-          Future.delayed(const Duration(seconds: 3), () {
-            if (mounted) {
-              _showError.value = false;
-            }
-          });
+          _showTemporaryDialog(_showError);
         },
       ),
       barrierDismissible: false,
@@ -122,150 +124,188 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Stack(
         children: [
-          SafeArea(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Welcome to XSIUM',
-                      style: theme.textTheme.headlineLarge,
-                    ),
-                    const SizedBox(height: 60),
-                    Obx(() => ElevatedButton(
-                          onPressed: _isLoading.value
-                              ? null
-                              : () {
-                                  _controller.cleanupLoginState();
-                                  _controller.loginWithLocalXumm();
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primary,
-                            foregroundColor: colorScheme.onPrimary,
-                            disabledBackgroundColor: colorScheme.primary
-                                .withAlpha(178), // 70% opacity
-                            disabledForegroundColor: colorScheme.onPrimary
-                                .withAlpha(178), // 70% opacity
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            minimumSize: const Size(220, 70),
-                          ),
-                          child: _isLoading.value
-                              ? SizedBox(
-                                  width: 24,
-                                  height: 24,
-                                  child: CircularProgressIndicator(
-                                    color: colorScheme.onPrimary,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Text(
-                                  'login_this_device'.tr,
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    color: colorScheme.onPrimary,
-                                  ),
-                                ),
-                        )),
-                    const SizedBox(height: 30),
-                    OutlinedButton(
-                      onPressed: () => _showQRLoginDialog(),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: colorScheme.primary,
-                        side: BorderSide(color: colorScheme.primary),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        minimumSize: const Size(220, 70),
-                      ),
-                      child: Text(
-                        'login_other_device'.tr,
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Obx(() => Stack(
-                children: [
-                  if (_showLoginInterruptError.value)
-                    LoginInterruptErrorDialog(
-                      isOpen: _showLoginInterruptError.value,
-                      onClose: () => _showLoginInterruptError.value = false,
-                    ),
-                  if (_showXummTerminated.value)
-                    XummTerminatedDialog(
-                      isOpen: _showXummTerminated.value,
-                      onClose: () => _showXummTerminated.value = false,
-                    ),
-                  if (_showError.value)
-                    ErrorDialog(
-                      message: _errorMessage.value,
-                      onClose: () => _showError.value = false,
-                    ),
-                ],
-              )),
+          _buildMainContent(),
+          _buildDialogs(),
         ],
       ),
     );
   }
 
+  Widget _buildMainContent() {
+    return RepaintBoundary(
+      child: SafeArea(
+        child: CustomScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: _LoginContent(
+                controller: _controller,
+                isLoading: _isLoading,
+                onQRLogin: _showQRLoginDialog,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDialogs() {
+    return Stack(
+      children: [
+        ValueListenableBuilder<bool>(
+          valueListenable: _showLoginInterruptError,
+          builder: (_, show, __) {
+            return show
+                ? LoginInterruptErrorDialog(
+                    isOpen: true, // isOpen 추가
+                    onClose: () => _showLoginInterruptError.value = false,
+                  )
+                : const SizedBox.shrink();
+          },
+        ),
+        ValueListenableBuilder<bool>(
+          valueListenable: _showXummTerminated,
+          builder: (_, show, __) {
+            return show
+                ? XummTerminatedDialog(
+                    isOpen: true, // isOpen 추가
+                    onClose: () => _showXummTerminated.value = false,
+                  )
+                : const SizedBox.shrink();
+          },
+        ),
+        ValueListenableBuilder<bool>(
+          valueListenable: _showError,
+          builder: (_, show, __) {
+            return show
+                ? ErrorDialog(
+                    message: _errorMessage.value,
+                    onClose: () => _showError.value = false,
+                  )
+                : const SizedBox.shrink();
+          },
+        ),
+      ],
+    );
+  }
+
   @override
   void dispose() {
+    _disposed = true;
+    _stateResetTimer?.cancel();
+    _isLoading.dispose();
+    _errorMessage.dispose();
+    _showLoginInterruptError.dispose();
+    _showXummTerminated.dispose();
+    _showError.dispose();
     _controller.dispose();
     WidgetsBinding.instance.removeObserver(this);
-    _showLoginInterruptError.close();
-    _showXummTerminated.close();
-    _showError.close();
-    _errorMessage.close();
-    _isLoading.close();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
+    if (_disposed) return;
 
-    if (!mounted) return;
-
-    switch (state) {
-      case AppLifecycleState.resumed:
-        if (_controller.isLoading) {
-          _showLoginInterruptError.value = true;
-          Future.delayed(const Duration(seconds: 2), () {
-            if (mounted) {
-              _showLoginInterruptError.value = false;
-            }
-          });
-        }
-        break;
-      case AppLifecycleState.paused:
-        _showLoginInterruptError.value = false;
-        _showXummTerminated.value = false;
-        _showError.value = false;
-        _errorMessage.value = '';
-        break;
-      case AppLifecycleState.inactive:
-      case AppLifecycleState.hidden:
-        break;
-      case AppLifecycleState.detached:
-        _controller.cleanupLoginState();
-        break;
+    if (state == AppLifecycleState.resumed && _controller.isLoading) {
+      _showTemporaryDialog(_showLoginInterruptError);
     }
+  }
+}
+
+class _LoginContent extends StatelessWidget {
+  final LoginController controller;
+  final ValueNotifier<bool> isLoading;
+  final VoidCallback onQRLogin;
+
+  const _LoginContent({
+    required this.controller,
+    required this.isLoading,
+    required this.onQRLogin,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text('Welcome to Xsium', style: theme.textTheme.headlineLarge),
+          const SizedBox(height: 60),
+          ValueListenableBuilder<bool>(
+            valueListenable: isLoading,
+            builder: (_, loading, __) {
+              return ElevatedButton(
+                onPressed: loading
+                    ? null
+                    : () async {
+                        // Start loading when the button is pressed
+                        // isLoading.value = true;
+
+                        // Trigger the login logic
+
+                        try {
+                          // 로그인 로직 실행
+                          controller.cleanupLoginState();
+                          await controller.loginWithLocalXumm();
+                        } catch (e) {
+                          // 에러 발생 시 로딩 종료
+                          // isLoading.value = false;
+                          developer.log('Login error: $e');
+                        }
+                        // 주의: 성공 시에는 여기서 isLoading을 false로 설정하지 않음
+                        // 로그인 컨트롤러에서 처리함
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
+                  // 비활성화 상태의 색상 추가
+                  disabledBackgroundColor:
+                      colorScheme.primary, // 로딩 중에도 같은 배경색 유지
+                  disabledForegroundColor:
+                      colorScheme.onPrimary, // 로딩 중에도 같은 텍스트/아이콘 색상 유지
+                  minimumSize: const Size(220, 70),
+                ),
+                child: loading
+                    ? CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.onPrimary,
+                      )
+                    : Text(
+                        'login_this_device'.tr,
+                        style: TextStyle(fontSize: 20),
+                      ),
+              );
+            },
+          ),
+          const SizedBox(height: 30),
+          OutlinedButton(
+            onPressed: onQRLogin,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: colorScheme.primary,
+              side: BorderSide(color: colorScheme.primary),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              minimumSize: const Size(220, 70),
+            ),
+            child: Text(
+              'login_other_device'.tr,
+              style: TextStyle(fontSize: 18),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

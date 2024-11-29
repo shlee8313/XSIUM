@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:get/get.dart';
+import '../../../config/theme.dart';
 
 class LoginInterruptErrorDialog extends StatefulWidget {
   final bool isOpen;
@@ -28,7 +30,7 @@ class _LoginInterruptErrorDialogState extends State<LoginInterruptErrorDialog> {
   }
 
   void _startDismissTimer() {
-    _dismissTimer = Timer(const Duration(seconds: 2), () {
+    _dismissTimer = Timer(const Duration(seconds: 3), () {
       if (mounted) {
         widget.onClose();
       }
@@ -45,6 +47,8 @@ class _LoginInterruptErrorDialogState extends State<LoginInterruptErrorDialog> {
   Widget build(BuildContext context) {
     if (!widget.isOpen) return const SizedBox.shrink();
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Align(
       alignment: Alignment.bottomCenter,
       child: Padding(
@@ -52,16 +56,17 @@ class _LoginInterruptErrorDialogState extends State<LoginInterruptErrorDialog> {
         child: Material(
           color: Colors.transparent,
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
+            margin: const EdgeInsets.symmetric(horizontal: 8),
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
+              color: colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(16),
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
-                  color: Colors.black26,
+                  color: Theme.of(context).shadowColor
+                    ..withAlpha(51), // 0.2 * 255 ≈ 51,
                   blurRadius: 10.0,
-                  offset: Offset(0.0, 10.0),
+                  offset: const Offset(0.0, 10.0),
                 ),
               ],
             ),
@@ -71,21 +76,22 @@ class _LoginInterruptErrorDialogState extends State<LoginInterruptErrorDialog> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.amber.withAlpha(25),
+                    color: AppColors.warning..withAlpha(25), // 0.2 * 255 ≈ 51,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.warning_amber_rounded,
-                    color: Colors.amber,
+                    color: AppColors.warning,
                     size: 32,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  '로그인이 완료되지 않았습니다.\nXUMM에서 로그인을 완료해주세요',
+                  'login_incomplete'.tr,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
                       ),
                 ),
               ],

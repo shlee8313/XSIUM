@@ -20,6 +20,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
 
     return AppBar(
       title: Text(title),
+      automaticallyImplyLeading: false, // 뒤로가기 버튼 제거
       backgroundColor: theme.colorScheme.surface,
       actions: [
         if (additionalActions != null) ...additionalActions!,
