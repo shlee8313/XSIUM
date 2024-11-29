@@ -186,20 +186,13 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           ),
           TextButton(
             onPressed: () async {
-              // 세션 정리
+              // 먼저 다이얼로그를 닫음
+              Navigator.of(context).pop(true);
+
+              // 약간의 딜레이 후 세션 정리 및 앱 종료
+              await Future.delayed(const Duration(milliseconds: 100));
               await _userSession.clear();
               _sessionCheckTimer?.cancel();
-
-              // 로그인 화면으로 이동
-              // if (context.mounted) {
-              //   await Navigator.of(context).pushAndRemoveUntil(
-              //     MaterialPageRoute(
-              //       builder: (context) => const LoginScreen(),
-              //     ),
-              //     (route) => false,
-              //   );
-              // }
-
               // 앱 종료
               if (Platform.isAndroid || Platform.isIOS) {
                 SystemNavigator.pop(); // 안드로이드와 iOS에서 앱 종료
