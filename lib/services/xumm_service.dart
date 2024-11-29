@@ -98,16 +98,12 @@ class XummService {
 
       if (launchDeepLink) {
         developer.log('Launching XUMM with deepLink: $deepLink');
-        // Native channel을 통해 XUMM 실행
-        try {
-          await platform.invokeMethod('openXummLogin', {'deepLink': deepLink});
-        } catch (e) {
-          developer.log('Error launching XUMM via platform channel: $e');
-          // fallback으로 url_launcher 시도
-          final uri = Uri.parse(deepLink);
-          if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-            throw Exception('xumm_launch_failed'.tr);
-          }
+        final uri = Uri.parse(deepLink);
+        if (!await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        )) {
+          throw Exception('xumm_launch_failed'.tr);
         }
       }
 
@@ -257,7 +253,7 @@ class XummService {
         await cancelLoginRequest(payloadId!);
         payloadId = null;
       }
-      await forceCloseXumm(); // XUMM 앱 강제 종료
+      // await forceCloseXumm(); // XUMM 앱 강제 종료
       await platform.invokeMethod('bringToFront');
     } catch (e) {
       developer.log('Error switching to chat: $e');
