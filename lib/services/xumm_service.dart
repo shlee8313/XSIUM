@@ -38,22 +38,18 @@ class XummService {
     }
   }
 
-  Future<Map<String, dynamic>> createLoginRequest(
-      {bool launchDeepLink = true}) async {
+  Future<Map<String, String>> createLoginRequest() async {
     if (_isProcessingLogin) {
-      developer.log('Login process already in progress');
-      throw Exception('login_in_progress'.tr);
+      throw Exception('Login process already in progress');
     }
 
     try {
       _isProcessingLogin = true;
-      developer.log('Creating new login request');
-
       final apiKey = await AppConfig.apiKey;
       final apiSecret = await AppConfig.apiSecret;
 
       if (apiKey == null || apiSecret == null) {
-        throw Exception('api_credentials_unavailable'.tr);
+        throw Exception('API credentials not available');
       }
 
       final payload = {
@@ -68,10 +64,14 @@ class XummService {
         'custom_meta': {
           'identifier': 'xsium_login_${DateTime.now().millisecondsSinceEpoch}',
           'blob': {'app': 'xsium', 'purpose': 'authentication'},
-          'instruction': 'Xsium Login'
+          'instruction': 'Xsium 로그인'
         }
       };
 
+      developer
+          .log('Creating login request with payload: ${jsonEncode(payload)}');
+
+      // HTTP 요청에 명시적인 timeout 설정
       final response = await http
           .post(
             Uri.parse('${AppConfig.baseUrl}/platform/payload'),
@@ -83,10 +83,13 @@ class XummService {
             },
             body: jsonEncode(payload),
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 5)); // 5초 timeout 추가
+
+      developer.log('Received response with status: ${response.statusCode}');
 
       if (response.statusCode != 200) {
-        throw Exception('api_request_failed'.tr);
+        throw Exception(
+            'Failed to create login request: ${response.statusCode}');
       }
 
       final data = jsonDecode(response.body);
@@ -96,22 +99,14 @@ class XummService {
           ? 'xumm://xumm.app/sign/${data['uuid']}'
           : data['next']['always'];
 
-      if (launchDeepLink) {
-        developer.log('Launching XUMM with deepLink: $deepLink');
-        final uri = Uri.parse(deepLink);
-        if (!await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        )) {
-          throw Exception('xumm_launch_failed'.tr);
-        }
-      }
+      developer
+          .log('Login request created successfully with UUID: ${data['uuid']}');
 
       return {
         'requestId': data['uuid'],
         'qrUrl': data['refs']['qr_png'],
         'deepLink': deepLink,
-        'wsUrl': data['refs']['websocket_status'],
+        'wsUrl': data['refs']['websocket_status']
       };
     } catch (e) {
       developer.log('Error in createLoginRequest: $e');
@@ -130,17 +125,6 @@ class XummService {
         return {'status': 'error', 'message': 'api_credentials_unavailable'.tr};
       }
 
-      // [수정전 코드]
-      // final response = await http.get(
-      //   Uri.parse('${AppConfig.baseUrl}/platform/payload/$payloadId'),
-      //   headers: {
-      //     'Accept': 'application/json',
-      //     'X-API-Key': apiKey,
-      //     'X-API-Secret': apiSecret,
-      //   },
-      // ).timeout(const Duration(seconds: 10));
-
-      // [수정후 코드]
       final response = await http.get(
         Uri.parse('${AppConfig.baseUrl}/platform/payload/$payloadId'),
         headers: {
@@ -164,33 +148,27 @@ class XummService {
       developer.log('XUMM Sign Status - Meta: $meta');
       developer.log('XUMM Sign Status - Response: $responseData');
 
-      // [수정전 코드]
-      // if (meta['signed'] == true && responseData['account'] != null) {
+      // [기존 코드]
+      // if (meta['resolved'] == true) {
       //   return {
       //     'status': 'success',
-      //     'account': responseData['account'],
+      //     'account': responseData['account'] ?? meta['resolved_account'],
       //   };
       // }
 
-      // [수정후 코드]
-      if (meta['signed'] == true) {
-        if (responseData['account'] != null &&
-            responseData['account'].toString().isNotEmpty) {
+      // [수정된 코드]
+      if (meta['signed'] == true || meta['resolved'] == true) {
+        final account = responseData['account'] ?? meta['resolved_account'];
+        if (account != null && account.toString().isNotEmpty) {
           return {
             'status': 'success',
-            'account': responseData['account'],
+            'account': account,
           };
         } else {
-          developer.log('Account data missing in signed payload');
-          return {'status': 'error', 'message': 'missing_account_data'.tr};
+          developer
+              .log('Account data missing or empty in signed/resolved payload');
+          return {'status': 'cancelled', 'message': 'login_cancelled'.tr};
         }
-      }
-
-      if (meta['resolved'] == true) {
-        return {
-          'status': 'success',
-          'account': responseData['account'] ?? meta['resolved_account'],
-        };
       }
 
       if (meta['cancelled'] == true) {
@@ -253,7 +231,7 @@ class XummService {
         await cancelLoginRequest(payloadId!);
         payloadId = null;
       }
-      // await forceCloseXumm(); // XUMM 앱 강제 종료
+      await forceCloseXumm(); // XUMM 앱 강제 종료
       await platform.invokeMethod('bringToFront');
     } catch (e) {
       developer.log('Error switching to chat: $e');

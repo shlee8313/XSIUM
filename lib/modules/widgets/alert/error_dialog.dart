@@ -28,7 +28,7 @@ class _ErrorDialogState extends State<ErrorDialog> {
   }
 
   void _startDismissTimer() {
-    _dismissTimer = Timer(const Duration(seconds: 3), () {
+    _dismissTimer = Timer(const Duration(seconds: 5), () {
       if (mounted) {
         widget.onClose();
       }
@@ -72,12 +72,12 @@ class _ErrorDialogState extends State<ErrorDialog> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.error..withAlpha(25), // 0.2 * 255 ≈ 51,
+                  decoration: const BoxDecoration(
+                    // color: AppColors.error..withAlpha(25), // 0.2 * 255 ≈ 51,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.error_outline_rounded,
+                    Icons.error_outline,
                     color: AppColors.error,
                     size: 32,
                   ),

@@ -46,5 +46,7 @@ dependencies {
     implementation 'com.jakewharton.timber:timber:5.0.1'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.6.1"
+    implementation "com.google.errorprone:error_prone_annotations:2.15.0"
+    implementation "com.google.code.findbugs:jsr305:3.0.2"
     // other dependencies...
 }

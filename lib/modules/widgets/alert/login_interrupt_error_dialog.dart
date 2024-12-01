@@ -30,7 +30,7 @@ class _LoginInterruptErrorDialogState extends State<LoginInterruptErrorDialog> {
   }
 
   void _startDismissTimer() {
-    _dismissTimer = Timer(const Duration(seconds: 3), () {
+    _dismissTimer = Timer(const Duration(seconds: 5), () {
       if (mounted) {
         widget.onClose();
       }
@@ -75,12 +75,12 @@ class _LoginInterruptErrorDialogState extends State<LoginInterruptErrorDialog> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.warning..withAlpha(25), // 0.2 * 255 ≈ 51,
+                  decoration: const BoxDecoration(
+                    // color: AppColors.warning..withAlpha(25), // 0.2 * 255 ≈ 51,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    Icons.warning_amber_rounded,
+                    Icons.warning_amber_outlined,
                     color: AppColors.warning,
                     size: 32,
                   ),

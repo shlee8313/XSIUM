@@ -230,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           onPanDown: (_) => _userSession.refreshSession(),
           child: Scaffold(
             backgroundColor: theme.colorScheme.surface,
-            appBar: CommonAppBar(title: 'Xsium'),
+            appBar: const CommonAppBar(title: 'Xsium'),
 
             // appBar: AppBar(
             //   title: const Text('Xsium'),
@@ -255,20 +255,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             //     ),
             //   ],
             // ),
-            body: AnimatedOpacity(
-              opacity: _isReady ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 300),
-              child: SafeArea(
-                child: Column(
-                  children: [
-                    // const SecurityBanner(),
-                    Expanded(
-                      child: _pages[_currentIndex],
-                    ),
-                  ],
-                ),
+            body: SafeArea(
+              child: Column(
+                children: [
+                  // const SecurityBanner(),
+                  Expanded(
+                    child: _pages[_currentIndex],
+                  ),
+                ],
               ),
             ),
+
             bottomNavigationBar: Theme(
               data: Theme.of(context).copyWith(
                 splashColor: Colors.transparent,

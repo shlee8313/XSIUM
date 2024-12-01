@@ -18,39 +18,49 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return AppBar(
-      title: Text(title),
-      automaticallyImplyLeading: false, // 뒤로가기 버튼 제거
-      backgroundColor: theme.colorScheme.surface,
-      actions: [
-        if (additionalActions != null) ...additionalActions!,
-        Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: IconButton(
-            icon: const Icon(Icons.settings),
-            color: theme.colorScheme.onSurface,
-            onPressed: () {
-              Navigator.of(context).push(
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      const CommonSettingsSheet(),
-                  opaque: false,
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: child,
-                    );
-                  },
-                ),
-              );
-            },
-          ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AppBar(
+          title: Text(title),
+          automaticallyImplyLeading: false,
+          backgroundColor: theme.colorScheme.surface,
+          actions: [
+            if (additionalActions != null) ...additionalActions!,
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: IconButton(
+                icon: const Icon(Icons.settings),
+                color: theme.colorScheme.onSurface,
+                onPressed: () {
+                  Navigator.of(context).push(
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          const CommonSettingsSheet(),
+                      opaque: false,
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: child,
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+        Container(
+          height: 0.5,
+          color: theme.dividerColor.withAlpha(125),
         ),
       ],
     );
   }
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize =>
+      const Size.fromHeight(kToolbarHeight + 0.5); // 구분선 높이 포함
 }

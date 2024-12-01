@@ -151,9 +151,11 @@ class _XsiumChatAppState extends State<XsiumChatApp>
       case AppLifecycleState.inactive:
       case AppLifecycleState.hidden:
       case AppLifecycleState.paused:
+        // 세션을 완전히 클리어하지 않고 백그라운드 상태만 관리
         _userSession.onAppBackground();
         break;
       case AppLifecycleState.detached:
+        // 앱이 완전히 종료될 때만 세션 클리어
         _userSession.clear();
         break;
     }

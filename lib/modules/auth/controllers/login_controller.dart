@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import '../../../services/xumm_service.dart';
 import '../../../core/session/user_session.dart';
 import '../../home/home_screen.dart';
+import '../../widgets/loading/loading_screen.dart';
 // import '../../home/controllers/home_controller.dart';
 import 'dart:developer' as developer;
 
@@ -139,6 +140,14 @@ class LoginController extends GetxController {
             onShowError?.call(errorMessage.tr);
           }
           break;
+        case 'showXummError': // 추가된 부분
+          if (!_isLoginInterrupted.value) {
+            final String errorMessage = call.arguments as String;
+            await _xummService.closeXummAndSwitchToChat(); // 추가
+            cleanupLoginState();
+            onShowError?.call(errorMessage);
+          }
+          break;
       }
     });
   }
@@ -177,13 +186,25 @@ class LoginController extends GetxController {
       final loginData = await _xummService.createLoginRequest();
       _validateLoginData(loginData);
 
-      developer.log('Validating login data: $loginData');
-
       final requestId = loginData['requestId']?.toString();
+      final deepLink = loginData['deepLink']?.toString();
 
-      if (requestId == null) {
+      if (requestId == null || deepLink == null) {
         developer.log('Invalid login data received');
         throw Exception('invalid_login_data'.tr);
+      }
+
+      developer.log('Launching XUMM with deepLink: $deepLink');
+      try {
+        final success = await platform
+            .invokeMethod('openXummLogin', {'deepLink': deepLink});
+        if (!success) throw Exception('Native launch failed');
+      } catch (e) {
+        developer.log('Platform channel failed, trying URL launcher');
+        final uri = Uri.parse(deepLink);
+        if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+          throw Exception('xumm_cannot_launch'.tr);
+        }
       }
 
       _requestId.value = requestId;
@@ -206,7 +227,7 @@ class LoginController extends GetxController {
     _resetLoginState();
     try {
       final loginData =
-          await _xummService.createLoginRequest(launchDeepLink: false);
+          await _xummService.createLoginRequest(); // launchDeepLink 파라미터 제거
       _validateLoginData(loginData);
 
       final requestId = loginData['requestId']?.toString();
@@ -323,7 +344,14 @@ class LoginController extends GetxController {
       case 'user_cancelled':
       case 'server_error':
         if (!_isLoginInterrupted.value) {
-          await handleXummError(status['message']?.tr ?? 'unknown_error'.tr);
+          // 모든 타이머 취소
+
+          // await platform.invokeMethod(
+          //     'handleXummError', status['message'] ?? 'unknown_error'.tr);
+          await handleXummError(status['message'] ?? 'unknown_error'.tr);
+
+          // 상태 정리
+          cleanupLoginState();
         }
         break;
     }
@@ -353,28 +381,35 @@ class LoginController extends GetxController {
       _isProcessingSuccess.value = true;
       _hasProcessedPayload[_requestId.value] = true;
 
-      // 1. 필수 데이터만 먼저 준비
-      // final homeController = Get.put(HomeController(), permanent: true);
-
-      // 2. 화면 전환 즉시 시작
       Get.off(
         () => HomeScreen(userAddress: account),
-        transition: Transition.noTransition, // 애니메이션 제거
-        duration: Duration.zero, // 전환 시간 0으로 설정
-        // duration: const Duration(milliseconds: 100), // 더 짧게
-        preventDuplicates: false,
-        popGesture: false,
+        transition: Transition.noTransition,
+        duration: Duration.zero,
       );
 
-      // 3. 나머지 작업은 백그라운드에서 비동기 처리
       unawaited(_performBackgroundTasks(account));
+      // try {
+      //   _isProcessingSuccess.value = true;
+      //   _hasProcessedPayload[_requestId.value] = true;
 
-      // 4. 홈 스크린 데이터는 별도로 로드
-      // unawaited(homeController.preloadData().then((_) {
-      //   if (Get.isRegistered<HomeController>()) {
-      //     homeController.update();
-      //   }
-      // }));
+      // 1. 로고 페이지로 먼저 전환
+      // Get.to(
+      //   () => const LoadingScreen(), // 새로운 로고 페이지
+      //   duration: Duration.zero,
+      //   transition: Transition.fade,
+      // );
+
+      // // 2. 백그라운드 작업 수행
+      // await _performBackgroundTasks(account);
+
+      // // 3. 홈스크린으로 전환
+      // Get.off(
+      //   () => HomeScreen(userAddress: account),
+      //   transition: Transition.fadeIn,
+      //   duration: const Duration(milliseconds: 300),
+      //   preventDuplicates: false,
+      //   popGesture: false,
+      // );
     } catch (e) {
       developer.log('Error handling login success: $e');
       onShowError?.call('login_processing_error'.tr);
@@ -414,17 +449,21 @@ class LoginController extends GetxController {
   Future<void> handleXummError(String errorMessage) async {
     try {
       developer.log('Handling XUMM error: $errorMessage');
-      // 먼저 상태를 실패로 변경
       _setLoginState(LoginState.failed);
-
-      // 타이머 정리
       _timer?.cancel();
       _timeoutTimer?.cancel();
+      _timer = null;
+      _timeoutTimer = null;
 
-      // XUMM 앱 종료 및 화면 전환
-      await _xummService.closeXummAndSwitchToChat();
+      // 에러 메시지와 함께 네이티브 메서드 호출
+      try {
+        await platform.invokeMethod('handleXummError', errorMessage);
+      } catch (e) {
+        developer.log('Error invoking handleXummError: $e');
+      }
+
       cleanupLoginState();
-      // 에러 메시지 표시
+
       if (!_isLoginInterrupted.value) {
         onShowError?.call(errorMessage);
       }

@@ -14,10 +14,10 @@ class AppColors {
   // Dark Theme Colors
   static const Color primaryDark = Color(0xFF6EA4EA);
   static const Color primaryVariantDark = Color(0xFF00357B);
-  static const Color surfaceDark = Color(0xFF001F3F);
-  static const Color surfaceContainerDark = Color(0xFF0A2744);
-  static const Color surfaceContainerHighDark = Color(0xFF173454);
-  static const Color surfaceContainerHighestDark = Color(0xFF264B73);
+  static const Color surfaceDark = Colors.black;
+  static const Color surfaceContainerDark = Color(0xFF121212);
+  static const Color surfaceContainerHighDark = Color(0xFF1E1E1E);
+  static const Color surfaceContainerHighestDark = Color(0xFF2C2C2C);
 
   // Common Colors
   static const Color success = Color(0xFF4CAF50);
