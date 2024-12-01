@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../canvas/widgets/canvas_list_tile.dart';
 import '../widgets/badges/timer_badge.dart';
 import '../widgets/security/secure_avatar.dart';
-import '../widgets/badges/timer_badge.dart';
+// import '../widgets/badges/timer_badge.dart';
 import '../widgets/base/optimized_list_view.dart';
 
 class CanvasTab extends StatelessWidget {

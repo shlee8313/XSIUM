@@ -1,6 +1,6 @@
 // lib/presentation/screens/chat/chat_room_body.dart
 import 'package:flutter/material.dart';
-import '../../../config/theme.dart';
+// import '../../../config/theme.dart';
 import '../../../models/message.dart'; // Message 모델 필요
 import 'message_bubble.dart';
 

@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
-import 'package:url_launcher/url_launcher.dart';
+// import 'package:url_launcher/url_launcher.dart';
 
 enum XummApiStatus {
   success,
@@ -148,16 +148,24 @@ class XummService {
       developer.log('XUMM Sign Status - Meta: $meta');
       developer.log('XUMM Sign Status - Response: $responseData');
 
-      // [기존 코드]
-      // if (meta['resolved'] == true) {
-      //   return {
-      //     'status': 'success',
-      //     'account': responseData['account'] ?? meta['resolved_account'],
-      //   };
-      // }
+      // null 안전 처리 추가
+      if (meta is! Map) {
+        return {'status': 'error', 'message': 'invalid_meta_data'.tr};
+      }
 
-      // [수정된 코드]
-      if (meta['signed'] == true || meta['resolved'] == true) {
+      // boolean 값 안전하게 처리
+      bool isSigned = meta['signed'] ?? false;
+      bool isResolved = meta['resolved'] ?? false;
+      bool isCancelled = meta['cancelled'] ?? false;
+      bool isExpired = meta['expired'] ?? false;
+      bool isInvalid = meta['invalid'] ?? false;
+      bool isUserCancelled = meta['user_cancelled'] ?? false;
+      bool isServerError = meta['server_error'] ?? false;
+      bool isPushed = meta['pushed'] ?? false;
+      bool isAppOpened = meta['app_opened'] ?? false;
+      bool isOpenedByDeeplink = meta['opened_by_deeplink'] ?? false;
+
+      if (isSigned || isResolved) {
         final account = responseData['account'] ?? meta['resolved_account'];
         if (account != null && account.toString().isNotEmpty) {
           return {
@@ -165,31 +173,29 @@ class XummService {
             'account': account,
           };
         } else {
-          developer
-              .log('Account data missing or empty in signed/resolved payload');
           return {'status': 'cancelled', 'message': 'login_cancelled'.tr};
         }
       }
 
-      if (meta['cancelled'] == true) {
+      if (isCancelled) {
         return {'status': 'cancelled', 'message': 'login_cancelled'.tr};
-      } else if (meta['expired'] == true) {
+      } else if (isExpired) {
         return {'status': 'expired', 'message': 'login_expired'.tr};
-      } else if (meta['invalid'] == true) {
+      } else if (isInvalid) {
         return {'status': 'invalid', 'message': 'invalid_login_request'.tr};
-      } else if (meta['user_cancelled'] == true) {
+      } else if (isUserCancelled) {
         return {
           'status': 'user_cancelled',
           'message': 'user_cancelled_login'.tr
         };
-      } else if (meta['server_error'] == true) {
+      } else if (isServerError) {
         return {
           'status': 'server_error',
           'message': 'server_error_occurred'.tr
         };
-      } else if (meta['pushed']) {
+      } else if (isPushed) {
         return {'status': 'pushed', 'message': 'request_pushed'.tr};
-      } else if (meta['app_opened'] || meta['opened_by_deeplink']) {
+      } else if (isAppOpened || isOpenedByDeeplink) {
         return {'status': 'opened'};
       }
 
