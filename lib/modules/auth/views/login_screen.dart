@@ -10,7 +10,7 @@ import '../../widgets/alert/login_interrupt_error_dialog.dart';
 import '../../widgets/alert/xumm_terminated_error_dialog.dart';
 import '../../widgets/alert/error_dialog.dart';
 import 'qr_login_dialog.dart';
-import '../../home/home_screen.dart';
+// import '../../home/home_screen.dart';
 import 'dart:developer' as developer;
 
 class LoginScreen extends StatefulWidget {
@@ -77,22 +77,22 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
       };
   }
 
-  Future<void> _handleLoginSuccess(String account) async {
-    if (_disposed) return;
+  // Future<void> _handleLoginSuccess(String account) async {
+  //   if (_disposed) return;
 
-    try {
-      await Get.off(
-        () => HomeScreen(userAddress: account),
-        transition: Transition.fadeIn,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    } catch (e) {
-      developer.log('Error navigating to home screen: $e', error: e);
-      _errorMessage.value = 'navigation_error'.tr;
-      _showTemporaryDialog(_showError);
-    }
-  }
+  //   try {
+  //     await Get.off(
+  //       () => HomeScreen(userAddress: account),
+  //       transition: Transition.fadeIn,
+  //       duration: const Duration(milliseconds: 300),
+  //       curve: Curves.easeInOut,
+  //     );
+  //   } catch (e) {
+  //     developer.log('Error navigating to home screen: $e', error: e);
+  //     _errorMessage.value = 'navigation_error'.tr;
+  //     _showTemporaryDialog(_showError);
+  //   }
+  // }
 
   void _showTemporaryDialog(ValueNotifier<bool> dialogState,
       {Duration duration = const Duration(seconds: 3)}) {

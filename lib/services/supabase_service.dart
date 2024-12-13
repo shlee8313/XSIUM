@@ -2,7 +2,7 @@
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../config/supabase_config.dart';
+// import '../config/supabase_config.dart';
 import 'dart:developer' as developer;
 
 class SupabaseService {
@@ -121,6 +121,9 @@ class SupabaseService {
     String? avatarUrl,
   }) async {
     try {
+      developer.log(
+          'Updating user: xummAddress=$xummAddress, displayName=$displayName, avatarUrl=$avatarUrl');
+
       final updates = {
         if (displayName != null) 'display_name': displayName,
         if (avatarUrl != null) 'avatar_url': avatarUrl,
@@ -129,13 +132,25 @@ class SupabaseService {
 
       if (updates.isEmpty) return true;
 
-      await _client
+      // 수정된 부분: 업데이트 쿼리 변경
+      final response = await _client
           ?.from('users')
           .update(updates)
-          .eq('xumm_address', xummAddress);
+          .eq('xumm_address', xummAddress)
+          .select(); // select() 추가하여 응답 확인
+
+      developer.log('Update response: $response');
+
+      // 응답 검증 추가
+      if (response == null || response.isEmpty) {
+        developer.log('Update failed: No response or empty response');
+        return false;
+      }
+
+      developer.log('Update successful: ${response[0]}');
       return true;
-    } catch (e) {
-      developer.log('Error updating user: $e');
+    } catch (e, stackTrace) {
+      developer.log('Error updating user:', error: e, stackTrace: stackTrace);
       return false;
     }
   }

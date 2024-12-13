@@ -10,10 +10,20 @@ import '../../core/session/user_session.dart';
 import '../auth/views/login_screen.dart';
 import '../widgets/avartar/avatar.dart';
 import './language_setting.dart';
+import './profile_edit_screen.dart';
 
-class CommonSettingsSheet extends StatelessWidget {
-  final _userSession = UserSession();
-  CommonSettingsSheet({super.key});
+class CommonSettingsSheet extends StatefulWidget {
+  const CommonSettingsSheet({super.key}); // final _userSession 제거
+
+  @override
+  State<CommonSettingsSheet> createState() => _CommonSettingsSheetState();
+}
+
+class _CommonSettingsSheetState extends State<CommonSettingsSheet> {
+  final _userSession = UserSession(); // State 클래스로 이동
+
+  // build 메서드와 나머지 메서드들은 그대로 유지
+  // 단, State 클래스 안으로 이동
 
   @override
   Widget build(BuildContext context) {
@@ -98,6 +108,18 @@ class CommonSettingsSheet extends StatelessWidget {
                             // 보안 설정 화면으로 이동
                           },
                         ),
+
+                        // Profile 메뉴 추가
+                        _buildSettingsTile(
+                          context,
+                          icon: Icon(Icons.person, color: colorScheme.primary),
+                          title: 'profile'.tr,
+                          subtitle: Text(
+                            _userSession.displayName ?? 'User',
+                            style: theme.textTheme.bodyMedium,
+                          ),
+                          onTap: () => _showProfileEdit(context),
+                        ),
                         _buildSettingsTile(
                           context,
                           icon: Icon(Icons.help_outline,
@@ -107,6 +129,7 @@ class CommonSettingsSheet extends StatelessWidget {
                             // 도움말 화면으로 이동
                           },
                         ),
+
                         _buildSettingsTile(
                           context,
                           icon: const Icon(Icons.logout, color: Colors.red),
@@ -191,6 +214,18 @@ class CommonSettingsSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _showProfileEdit(BuildContext context) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ProfileEditScreen()),
+    );
+
+    if (result == true) {
+      // 프로필이 업데이트되면 설정 화면 새로고침
+      setState(() {});
+    }
   }
 
   Future<void> _handleLogout(BuildContext context) async {
