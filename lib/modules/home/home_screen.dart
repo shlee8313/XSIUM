@@ -230,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           onPanDown: (_) => _userSession.refreshSession(),
           child: Scaffold(
             backgroundColor: theme.colorScheme.surface,
-            appBar: const CommonAppBar(title: 'Xsium'),
+            appBar: CommonAppBar(title: 'Xsium'),
 
             // appBar: AppBar(
             //   title: const Text('Xsium'),
@@ -373,3 +373,25 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     }
   }
 }
+
+// import 'package:flutter/material.dart';
+
+// class HomeScreen extends StatelessWidget {
+//   final String userAddress;
+//   const HomeScreen({
+//     super.key,
+//     required this.userAddress,
+//   });
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return const Scaffold(
+//       body: Center(
+//         child: Text(
+//           '여기는 홈',
+//           style: TextStyle(fontSize: 20),
+//         ),
+//       ),
+//     );
+//   }
+// }

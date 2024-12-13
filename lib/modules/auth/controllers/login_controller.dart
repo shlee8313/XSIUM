@@ -7,9 +7,11 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:get/get.dart';
 import '../../../services/xumm_service.dart';
+import '../../../services/supabase_service.dart';
 import '../../../core/session/user_session.dart';
 import '../../home/home_screen.dart';
-import '../../widgets/loading/loading_screen.dart';
+import '../views/onboarding_screen.dart';
+// import '../../widgets/loading/loading_screen.dart';
 // import '../../home/controllers/home_controller.dart';
 import 'dart:developer' as developer;
 
@@ -331,8 +333,10 @@ class LoginController extends GetxController {
         break;
       case 'success':
         final String? account = status['account'];
+        final String? userToken = status['userToken'];
+
         if (account != null && account.isNotEmpty) {
-          await _handleLoginSuccess(account);
+          await handleLoginSuccess(account, userToken);
         } else {
           throw Exception('invalid_account_data'.tr);
         }
@@ -371,7 +375,7 @@ class LoginController extends GetxController {
     }
   }
 
-  Future<void> _handleLoginSuccess(String account) async {
+  Future<void> handleLoginSuccess(String account, String? userToken) async {
     if (_isProcessingSuccess.value ||
         _hasProcessedPayload[_requestId.value] == true) {
       return;
@@ -381,35 +385,59 @@ class LoginController extends GetxController {
       _isProcessingSuccess.value = true;
       _hasProcessedPayload[_requestId.value] = true;
 
-      Get.off(
-        () => HomeScreen(userAddress: account),
-        transition: Transition.noTransition,
-        duration: Duration.zero,
-      );
+      developer.log(
+          'Processing login success with account: $account, userToken: $userToken');
 
-      unawaited(_performBackgroundTasks(account));
-      // try {
-      //   _isProcessingSuccess.value = true;
-      //   _hasProcessedPayload[_requestId.value] = true;
+      // 1. 모든 작업을 먼저 완료
+      await Future.wait([
+        _userSession.clear(),
+        platform.invokeMethod('handleLoginSuccess'),
+      ]);
 
-      // 1. 로고 페이지로 먼저 전환
-      // Get.to(
-      //   () => const LoadingScreen(), // 새로운 로고 페이지
-      //   duration: Duration.zero,
-      //   transition: Transition.fade,
-      // );
+      // 2. Supabase users 체크
+      try {
+        final existingUser = await SupabaseService.instance
+            .from('users')
+            .select()
+            .eq('xumm_address', account)
+            .single();
 
-      // // 2. 백그라운드 작업 수행
-      // await _performBackgroundTasks(account);
+        // 유저 정보가 있으면 UserSession 초기화
+        if (existingUser != null) {
+          await _userSession.initializeUserData(
+            address: account,
+            displayName: existingUser['display_name'],
+            avatarUrl: existingUser['avatar_url'],
+          );
+        }
 
-      // // 3. 홈스크린으로 전환
-      // Get.off(
-      //   () => HomeScreen(userAddress: account),
-      //   transition: Transition.fadeIn,
-      //   duration: const Duration(milliseconds: 300),
-      //   preventDuplicates: false,
-      //   popGesture: false,
-      // );
+        // 3. cleanup 수행
+        cleanupLoginState();
+
+        // 4. 한번에 화면 전환
+        Get.offAll(
+          () => existingUser != null
+              ? HomeScreen(userAddress: account)
+              : OnboardingScreen(
+                  userAddress: account,
+                  userToken: userToken ?? '',
+                ),
+          transition: Transition.noTransition,
+          duration: Duration.zero,
+        );
+      } catch (e) {
+        // users 테이블에서 유저를 찾지 못한 경우
+        await _userSession.initializeUserData(address: account); // 기본 정보만 초기화
+        cleanupLoginState();
+        Get.offAll(
+          () => OnboardingScreen(
+            userAddress: account,
+            userToken: userToken ?? '',
+          ),
+          transition: Transition.noTransition,
+          duration: Duration.zero,
+        );
+      }
     } catch (e) {
       developer.log('Error handling login success: $e');
       onShowError?.call('login_processing_error'.tr);

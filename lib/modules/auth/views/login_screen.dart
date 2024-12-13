@@ -64,7 +64,7 @@ class _LoginScreenState extends State<LoginScreen> with WidgetsBindingObserver {
       ..onLoadingChanged = (value) {
         if (!_disposed) _isLoading.value = value;
       }
-      ..onLoginSuccess = _handleLoginSuccess
+      // ..onLoginSuccess = _handleLoginSuccess
       ..onShowLoginInterruptError = () {
         _showTemporaryDialog(_showLoginInterruptError);
       }
@@ -283,7 +283,7 @@ class _LoginContent extends StatelessWidget {
                       )
                     : Text(
                         'login_this_device'.tr,
-                        style: TextStyle(fontSize: 20),
+                        style: const TextStyle(fontSize: 20),
                       ),
               );
             },
@@ -301,7 +301,7 @@ class _LoginContent extends StatelessWidget {
             ),
             child: Text(
               'login_other_device'.tr,
-              style: TextStyle(fontSize: 18),
+              style: const TextStyle(fontSize: 18),
             ),
           ),
         ],

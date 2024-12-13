@@ -44,7 +44,7 @@ class _ChatRoomBodyState extends State<ChatRoomBody> {
     setState(() => _isLoading = true);
 
     try {
-      // TODO: 메시지 로드 로직 구현
+      //  메시지 로드 로직 구현
       // final messages = await chatRepository.getMessages(widget.partnerId);
       // setState(() {
       //   _messages.addAll(messages);
@@ -63,7 +63,7 @@ class _ChatRoomBodyState extends State<ChatRoomBody> {
     setState(() => _isSending = true);
 
     try {
-      // TODO: 메시지 전송 로직 구현
+      //  메시지 전송 로직 구현
       // final message = await chatRepository.sendMessage(
       //   widget.partnerId,
       //   text,
@@ -124,11 +124,11 @@ class _ChatRoomBodyState extends State<ChatRoomBody> {
           padding: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
-            boxShadow: [
+            boxShadow: const [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Color(0x1A9E9E9E),
                 blurRadius: 4,
-                offset: const Offset(0, -2),
+                offset: Offset(0, -2),
               ),
             ],
           ),
@@ -139,7 +139,7 @@ class _ChatRoomBodyState extends State<ChatRoomBody> {
                 IconButton(
                   icon: const Icon(Icons.attach_file),
                   onPressed: () {
-                    // TODO: 파일 첨부 기능 구현
+                    //  파일 첨부 기능 구현
                   },
                 ),
                 // 메시지 입력 필드
@@ -153,7 +153,7 @@ class _ChatRoomBodyState extends State<ChatRoomBody> {
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
-                      fillColor: theme.colorScheme.surfaceVariant,
+                      fillColor: theme.colorScheme.surface,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 8,

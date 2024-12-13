@@ -25,11 +25,13 @@ class CoinBalanceWidget extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: themeController.isDarkMode.value
-                  ? Colors.blue.withOpacity(0.2)
-                  : Colors.blue.withOpacity(0.1),
+                  ? const Color(0x332196F3) //blueOpacity20 = Color(0x332196F3);
+                  : const Color(
+                      0x1A2196F3), //blueOpacity10 = Color(0x1A2196F3);
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: Colors.blue.withOpacity(0.3),
+                color: const Color(
+                    0x4D2196F3), //blueOpacity30 = Color(0x4D2196F3);
               ),
             ),
             child: Row(

@@ -48,6 +48,9 @@ class XummService {
       final apiKey = await AppConfig.apiKey;
       final apiSecret = await AppConfig.apiSecret;
 
+      developer.log('API Key: $apiKey'); // API 키 확인
+      developer.log('API Secret: $apiSecret'); // API Secret 확인
+
       if (apiKey == null || apiSecret == null) {
         throw Exception('API credentials not available');
       }
@@ -68,13 +71,19 @@ class XummService {
         }
       };
 
-      developer
-          .log('Creating login request with payload: ${jsonEncode(payload)}');
+      const url = '${AppConfig.baseUrl}/platform/payload';
+      developer.log('Request URL: $url'); // URL 확인
+      developer.log('Request Headers: ${jsonEncode({
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-API-Key': apiKey,
+            'X-API-Secret': apiSecret,
+          })}'); // 헤더 확인
+      developer.log('Request Payload: ${jsonEncode(payload)}'); // 페이로드 확인
 
-      // HTTP 요청에 명시적인 timeout 설정
       final response = await http
           .post(
-            Uri.parse('${AppConfig.baseUrl}/platform/payload'),
+            Uri.parse(url),
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
@@ -83,13 +92,14 @@ class XummService {
             },
             body: jsonEncode(payload),
           )
-          .timeout(const Duration(seconds: 5)); // 5초 timeout 추가
+          .timeout(const Duration(seconds: 5));
 
-      developer.log('Received response with status: ${response.statusCode}');
+      developer.log('Response Status Code: ${response.statusCode}'); // 응답 상태 코드
+      developer.log('Response Body: ${response.body}'); // 응답 본문
 
       if (response.statusCode != 200) {
         throw Exception(
-            'Failed to create login request: ${response.statusCode}');
+            'Failed to create login request: ${response.statusCode} - ${response.body}');
       }
 
       final data = jsonDecode(response.body);
@@ -99,8 +109,7 @@ class XummService {
           ? 'xumm://xumm.app/sign/${data['uuid']}'
           : data['next']['always'];
 
-      developer
-          .log('Login request created successfully with UUID: ${data['uuid']}');
+      developer.log('Generated DeepLink: $deepLink'); // 생성된 딥링크
 
       return {
         'requestId': data['uuid'],
@@ -108,8 +117,9 @@ class XummService {
         'deepLink': deepLink,
         'wsUrl': data['refs']['websocket_status']
       };
-    } catch (e) {
+    } catch (e, stackTrace) {
       developer.log('Error in createLoginRequest: $e');
+      developer.log('Stack trace: $stackTrace');
       rethrow;
     } finally {
       _isProcessingLogin = false;
@@ -167,10 +177,16 @@ class XummService {
 
       if (isSigned || isResolved) {
         final account = responseData['account'] ?? meta['resolved_account'];
+        final userToken = responseData['user']; // XUMM UUID 추가
+
         if (account != null && account.toString().isNotEmpty) {
+          // 성공 응답에 account와 userToken을 포함
           return {
             'status': 'success',
             'account': account,
+            'userToken': userToken,
+            'meta': meta, // 메타 데이터 추가
+            'response': responseData // 전체 응답 데이터 추가
           };
         } else {
           return {'status': 'cancelled', 'message': 'login_cancelled'.tr};

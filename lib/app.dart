@@ -32,6 +32,7 @@ class _XsiumChatAppState extends State<XsiumChatApp>
     themeController = Get.put(ThemeController());
     languageController = Get.put(LanguageController());
     _initializeApp();
+    _initializeControllers(); // 추가
   }
 
   @override
@@ -62,10 +63,15 @@ class _XsiumChatAppState extends State<XsiumChatApp>
     }
   }
 
+  // 컨트롤러 초기화 메서드 추가
+  Future<void> _initializeControllers() async {
+    await themeController.initializeFull();
+  }
+
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: 'app_name'.tr,
+      title: 'Xsium',
       debugShowCheckedModeBanner: false,
       translations: AppTranslations(),
       // Language 설정 개선: 안정성 검사 추가

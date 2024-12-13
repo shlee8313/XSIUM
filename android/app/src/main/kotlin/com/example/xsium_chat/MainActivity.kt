@@ -49,29 +49,31 @@ class MainActivity: FlutterActivity() {
     private var startAttempts = 0
     private val maxStartAttempts = 3
 
+    // 
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+    
+        // UI 및 Surface 설정을 하나의 flags로 통합
+        window.apply {
+            // 필수 플래그들을 비트 연산으로 한 번에 설정
+            addFlags(
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
+            )
+            
+            // 투명도 설정
+            setFormat(PixelFormat.TRANSLUCENT)
+            
+            // System UI 설정
+            decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                                         View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        }
         
-        // 기존 코드
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        window.addFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED)
-        
-        // Surface 관련 설정 추가
-        window.setFormat(PixelFormat.TRANSLUCENT)
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                                            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-        
-        // Surface 하드웨어 가속 최적화 설정 추가
-        window.setFlags(
-            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
-            WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED
-        )
-        
-        if (intent.flags and Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT != 0) {
-            if (intent.component?.className == MainActivity::class.java.name) {
-                finish()
-                return
-            }
+        // 중복 실행 방지 로직
+        if (isTaskRoot.not() && intent.hasCategory(Intent.CATEGORY_LAUNCHER)) {
+            finish()
+            return
         }
         
         resetState()
@@ -95,65 +97,136 @@ class MainActivity: FlutterActivity() {
                         "isNetworkAvailable" -> {
                             result.success(isNetworkAvailable())
                         }
+                        // "openXummLogin" -> {
+                        //     try {
+                        //         val deepLink = call.argument<String>("deepLink") ?: ""
+                        //         developer.d("XUMM", "Attempting to open XUMM with deep link: $deepLink")
+                        
+                        //         if (isXummInstalled()) {
+                        //             isLoginInProgress = true
+                        //             xummState = XummState.INITIALIZING
+                        
+                        //             // XUMM 앱 실행
+                        //             val launchIntent = packageManager.getLaunchIntentForPackage(XUMM_PACKAGE)?.apply {
+                        //                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        //                 addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        //                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                        //             }
+                        //             startActivity(launchIntent)
+                        
+                        //             // XUMM 실행 상태 체크
+                        //             withContext(Dispatchers.Default) {
+                        //                 var waitTime = 0
+                        //                 while (!isXummRunning() && waitTime < 5000) {  // 5초로 대기 시간 설정
+                        //                     delay(100)
+                        //                     waitTime += 100
+                        //                 }
+                        
+                        //                 if (isXummRunning()) {
+                        //                     delay(500)  // 대기 후 XUMM 앱이 실행 중이라면
+                        
+                        //                     // 이미 로그인 진행 중인지 체크
+                        //                     if (!isLoginInProgress) {
+                        //                         withContext(Dispatchers.Main) {
+                        //                             val intent = Intent(Intent.ACTION_VIEW).apply {
+                        //                                 data = Uri.parse(deepLink)
+                        //                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        //                                 addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        //                                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                        //                             }
+                        //                             startActivity(intent)
+                        //                             xummState = XummState.RUNNING
+                        //                             result.success(true)
+                        //                         }
+                        //                     } else {
+                        //                         // 이미 로그인 중이면 중복 요청을 막음
+                        //                         withContext(Dispatchers.Main) {
+                        //                             isLoginInProgress = false
+                        //                             xummState = XummState.FAILED
+                        //                             result.error("XUMM_ALREADY_LOGGING_IN", "Login already in progress", null)
+                        //                         }
+                        //                     }
+                        //                 } else {
+                        //                     withContext(Dispatchers.Main) {
+                        //                         isLoginInProgress = false
+                        //                         xummState = XummState.FAILED
+                        //                         result.error("XUMM_LAUNCH_FAILED", "Failed to launch XUMM app", null)
+                        //                     }
+                        //                 }
+                        //             }
+                        //         } else {
+                        //             result.error("XUMM_NOT_INSTALLED", "XUMM app is not installed", null)
+                        //         }
+                        //     } catch (e: Exception) {
+                        //         isLoginInProgress = false
+                        //         xummState = XummState.FAILED
+                        //         developer.e("XUMM", "Error launching XUMM: ${e.message}")
+                        //         result.error("XUMM_LAUNCH_ERROR", e.message, null)
+                        //     }
+                        // }  
                         "openXummLogin" -> {
-                            try {
-                                val deepLink = call.argument<String>("deepLink") ?: ""
-                                developer.d("XUMM", "Attempting to open XUMM with deep link: $deepLink")
-                                
-                                if (isXummInstalled()) {
-                                    isLoginInProgress = true
-                                    xummState = XummState.INITIALIZING
-                                    
-                                    // XUMM 앱 실행
-                                    val launchIntent = packageManager.getLaunchIntentForPackage(XUMM_PACKAGE)?.apply {
-                                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                        addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                                        addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                                    }
-                                    startActivity(launchIntent)
-                                    
-                                    // XUMM 실행 상태 체크
-                                    withContext(Dispatchers.Default) {
-                                        var waitTime = 0
-                                        while (!isXummRunning() && waitTime < 7000) {  // 3초로 조정
-                                            delay(100)
-                                            waitTime += 100
-                                        }
-                                        
-                                        if (isXummRunning()) {
-                                            delay(500)  // XUMM 초기화를 위한 추가 대기
-                                            
-                                            // Deep Link 처리
-                                            withContext(Dispatchers.Main) {
-                                                val intent = Intent(Intent.ACTION_VIEW).apply {
-                                                    data = Uri.parse(deepLink)
-                                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                                                    addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                                                    setPackage(XUMM_PACKAGE)
-                                                }
-                                                startActivity(intent)
-                                                xummState = XummState.RUNNING
-                                                result.success(true)
+                            activityScope.launch {
+                                try {
+                                    val deepLink = call.argument<String>("deepLink") ?: ""
+                                    developer.d("XUMM", "Attempting to open XUMM with deep link: $deepLink")
+
+                                    if (isXummInstalled()) {
+                                        isLoginInProgress = true
+                                        xummState = XummState.INITIALIZING
+
+                                        // 먼저 딥링크로 시도
+                                        try {
+                                            val deepLinkIntent = Intent(Intent.ACTION_VIEW).apply {
+                                                data = Uri.parse(deepLink)
+                                                setPackage(XUMM_PACKAGE)
+                                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
+                                                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                                                        Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                             }
-                                        } else {
-                                            withContext(Dispatchers.Main) {
-                                                isLoginInProgress = false
-                                                xummState = XummState.FAILED
-                                                result.error("XUMM_LAUNCH_FAILED", "Failed to launch XUMM app", null)
+                                            startActivity(deepLinkIntent)
+                                            xummState = XummState.RUNNING
+                                            result.success(true)
+                                        } catch (e: Exception) {
+                                            // 딥링크 실패시 XUMM 앱 실행 후 재시도
+                                            val launchIntent = packageManager.getLaunchIntentForPackage(XUMM_PACKAGE)?.apply {
+                                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
+                                                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                                                        Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                             }
+                                            startActivity(launchIntent)
+
+                                            // XUMM 실행 대기
+                                            var waitTime = 0
+                                            while (!isXummRunning() && waitTime < 3000) {
+                                                delay(100)
+                                                waitTime += 100
+                                            }
+
+                                            delay(500)  // 초기화 대기
+
+                                            // 딥링크 재시도
+                                            val retryIntent = Intent(Intent.ACTION_VIEW).apply {
+                                                data = Uri.parse(deepLink)
+                                                setPackage(XUMM_PACKAGE)
+                                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or
+                                                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                                                        Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                            }
+                                            startActivity(retryIntent)
+                                            xummState = XummState.RUNNING
+                                            result.success(true)
                                         }
+                                    } else {
+                                        result.error("XUMM_NOT_INSTALLED", "XUMM app is not installed", null)
                                     }
-                                } else {
-                                    result.error("XUMM_NOT_INSTALLED", "XUMM app is not installed", null)
+                                } catch (e: Exception) {
+                                    isLoginInProgress = false
+                                    xummState = XummState.FAILED
+                                    developer.e("XUMM", "Error launching XUMM: ${e.message}")
+                                    result.error("XUMM_LAUNCH_ERROR", e.message, null)
                                 }
-                            } catch (e: Exception) {
-                                isLoginInProgress = false
-                                xummState = XummState.FAILED
-                                developer.e("XUMM", "Error launching XUMM: ${e.message}")
-                                result.error("XUMM_LAUNCH_ERROR", e.message, null)
                             }
-                        }                     
+                        }           
                         "bringToFront" -> {
                             try {
                                 isLoginInProgress = false  // 로그인 상태 해제
@@ -258,6 +331,21 @@ class MainActivity: FlutterActivity() {
         }
     }
 
+
+    private fun isXummRunning(): Boolean {
+        return try {
+            val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val processes = activityManager.runningAppProcesses ?: return false
+            
+            processes.any { process -> 
+                process.processName == XUMM_PACKAGE && 
+                process.importance <= ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE
+            }
+        } catch (e: Exception) {
+            developer.e("XUMM", "Error checking XUMM state: ${e.message}")
+            false
+        }
+    }
     // private fun isXummRunning(): Boolean {
     //     try {
     //         val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
@@ -277,21 +365,66 @@ class MainActivity: FlutterActivity() {
     //     }
     // }
 
-    private fun isXummRunning(): Boolean {
-        try {
-            val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-            // 디버깅 모드를 고려한 더 유연한 체크
-            return activityManager.runningAppProcesses?.any { 
-                it.processName == XUMM_PACKAGE && 
-                it.importance <= ActivityManager.RunningAppProcessInfo.IMPORTANCE_SERVICE 
-            } ?: false
-        } catch (e: Exception) {
-            developer.e("XUMM", "Error checking XUMM state: ${e.message}")
-            return false
+    // private fun isXummRunning(): Boolean {
+    //     try {
+    //         val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    //         // 디버깅 모드를 고려한 더 유연한 체크
+    //         return activityManager.runningAppProcesses?.any { 
+    //             it.processName == XUMM_PACKAGE && 
+    //             it.importance <= ActivityManager.RunningAppProcessInfo.IMPORTANCE_SERVICE 
+    //         } ?: false
+    //     } catch (e: Exception) {
+    //         developer.e("XUMM", "Error checking XUMM state: ${e.message}")
+    //         return false
+    //     }
+    // }
+
+
+    // private fun isXummRunning(): Boolean {
+    //     return try {
+    //         // 패키지의 기본 활동이 실행 중인지 확인
+    //         val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    //         val tasks = activityManager.getRunningTasks(1)
+    //         if (tasks.isNotEmpty()) {
+    //             val topActivity = tasks[0].topActivity
+    //             topActivity?.packageName == XUMM_PACKAGE
+    //         } else {
+    //             false
+    //         }
+    //     } catch (e: Exception) {
+    //         developer.e("XUMM", "Error checking XUMM state: ${e.message}")
+    //         false
+    //     }
+    // }
+    
+
+
+    // private fun isXummRunning(): Boolean {
+    //     return try {
+    //         val packageManager = context.packageManager
+    //         val intent = packageManager.getLaunchIntentForPackage(XUMM_PACKAGE)
+    //         intent != null && isActivityRunning(XUMM_PACKAGE)
+    //     } catch (e: Exception) {
+    //         false
+    //     }
+    // }
+    // private fun isXummRunning(): Boolean {
+    //     return try {
+    //         val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+    //         // 더 간단한 로직으로 변경
+    //         activityManager.runningAppProcesses?.any { it.processName == XUMM_PACKAGE } == true
+    //     } catch (e: Exception) {
+    //         developer.e("XUMM", "Error checking XUMM state: ${e.message}")
+    //         false
+    //     }
+    // }
+    
+    private fun isActivityRunning(packageName: String): Boolean {
+        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        return activityManager.appTasks.any { 
+            it.taskInfo.baseActivity?.packageName == packageName 
         }
     }
-
-    
 
     private fun handleLoginSuccess() {
         activityScope.launch(Dispatchers.Main) {
@@ -322,6 +455,7 @@ class MainActivity: FlutterActivity() {
         }
     }
 
+    
     private fun handleLoginError(error: Exception) {
         developer.e("XUMM", "Login error: ${error.message}")
         

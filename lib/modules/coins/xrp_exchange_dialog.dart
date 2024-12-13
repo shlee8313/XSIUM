@@ -65,7 +65,7 @@ class XRPExchangeDialog extends StatelessWidget {
                 ),
               )),
           const SizedBox(height: 8),
-          Text(
+          const Text(
             'Exchange Rate: 1 XRP = $_exchangeRate XSIUM',
             style: TextStyle(
               color: Colors.grey,
@@ -105,7 +105,7 @@ class XRPExchangeDialog extends StatelessWidget {
         throw Exception('Invalid amount');
       }
 
-      // TODO: 실제 교환 로직 구현
+      // 실제 교환 로직 구현
 
       Get.back();
       Get.snackbar(

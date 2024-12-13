@@ -67,7 +67,7 @@ class _TransactionItem extends StatelessWidget {
           BoxShadow(
             color: themeController.isDarkMode.value
                 ? Colors.black26
-                : Colors.grey.withOpacity(0.1),
+                : const Color(0x1A9E9E9E), // greyOpacity10 = Color(0x1A9E9E9E);
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -79,8 +79,9 @@ class _TransactionItem extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: isPositive
-                  ? Colors.green.withOpacity(0.1)
-                  : Colors.red.withOpacity(0.1),
+                  ? const Color(
+                      0x1A4CAF50) //greenOpacity10 = Color(0x1A4CAF50);
+                  : const Color(0x1AF44336), //redOpacity10 = Color(0x1AF44336);
               shape: BoxShape.circle,
             ),
             child: Icon(

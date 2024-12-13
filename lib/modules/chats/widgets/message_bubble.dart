@@ -1,5 +1,6 @@
 // lib/presentation/widgets/chat/message_bubble.dart
 import 'package:flutter/material.dart';
+import 'package:xsium_chat/config/theme.dart';
 import '../../../models/message.dart';
 
 class MessageBubble extends StatelessWidget {
@@ -30,9 +31,7 @@ class MessageBubble extends StatelessWidget {
           vertical: 10,
         ),
         decoration: BoxDecoration(
-          color: isMe
-              ? theme.colorScheme.primary
-              : theme.colorScheme.surfaceVariant,
+          color: isMe ? theme.colorScheme.primary : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
@@ -53,8 +52,8 @@ class MessageBubble extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 color: isMe
-                    ? theme.colorScheme.onPrimary.withOpacity(0.7)
-                    : theme.colorScheme.onSurfaceVariant.withOpacity(0.7),
+                    ? AppColors.onPrimaryLight70
+                    : AppColors.onPrimaryDark70,
               ),
             ),
           ],

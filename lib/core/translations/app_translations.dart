@@ -75,7 +75,19 @@ class AppTranslations extends Translations {
           'exit_message': 'Do you want to exit the app?',
           'session_expired': 'Session expired. Please login again.',
           'logout_error': 'Error occurred during logout.',
+          // onBoarding
 
+          'only_english_allowed':
+              'Only English letters and numbers are allowed',
+          'name_min_length': 'Name must be at least 5 characters',
+          'name_max_length': 'Name must be less than 40 characters',
+          'name_already_in_use': 'This name is already in use',
+          'error_checking_name': 'Error checking name availability',
+          'enter_display_name': 'Please enter a display name in english',
+          'create_user_failed': 'Failed to create user. Please try again.',
+          'unexpected_error': 'An unexpected error occurred. Please try again.',
+          // Nickname already taken
+          'nickname_taken': 'The nickname you entered is already in use.',
           // Settings
           'settings': 'Settings',
           'theme': 'Theme',
@@ -137,7 +149,18 @@ class AppTranslations extends Translations {
           'logout_confirm_message': '정말 로그아웃 하시겠습니까?',
           'logout_error_message': '로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.',
           'logout_success': '로그아웃되었습니다',
+          // onBoarding
 
+          'only_english_allowed': '영문자와 숫자만 입력 가능합니다',
+          'name_min_length': '이름은 최소 5자 이상이어야 합니다',
+          'name_max_length': '이름은 40자 미만이어야 합니다',
+          'name_already_in_use': '이미 사용 중인 이름입니다',
+          'error_checking_name': '이름 확인 중 오류가 발생했습니다',
+          'enter_display_name': '영문으로 표시 이름을 입력해주세요',
+          'create_user_failed': '사용자 생성에 실패했습니다. 다시 시도해주세요.',
+          'unexpected_error': '예기치 않은 오류가 발생했습니다. 다시 시도해주세요.',
+          // Nickname already taken
+          'nickname_taken': '입력한 닉네임은 이미 사용중입니다.',
           // 홈 화면
           'home': '홈',
           'friends': '친구',
@@ -211,7 +234,18 @@ class AppTranslations extends Translations {
           'logout_confirm_message': 'ログアウトしてもよろしいですか？',
           'logout_error_message': 'ログアウト中にエラーが発生しました。もう一度お試しください。',
           'logout_success': 'ログアウトしました',
+// onBoarding
 
+          'only_english_allowed': '英文字と数字のみ入力可能です',
+          'name_min_length': '名前は5文字以上である必要があります',
+          'name_max_length': '名前は40文字未満である必要があります',
+          'name_already_in_use': 'この名前は既に使用されています',
+          'error_checking_name': '名前の確認中にエラーが発生しました',
+          'enter_display_name': '英語で表示名を入力してください',
+          'create_user_failed': 'ユーザーの作成に失敗しました。もう一度お試しください。',
+          'unexpected_error': '予期しないエラーが発生しました。もう一度お試しください。',
+          // Nickname already taken
+          'nickname_taken': '入力したニックネームはすでに使用されています。',
           // ホーム画面
           'home': 'ホーム',
           'friends': '友達',
@@ -300,7 +334,21 @@ class AppTranslations extends Translations {
           'logout_error_message':
               'Se produjo un error al cerrar sesión. Por favor, inténtalo de nuevo.',
           'logout_success': 'Sesión cerrada correctamente',
-
+          // onBoarding
+          'only_english_allowed': 'Solo se permiten letras en inglés y números',
+          'name_min_length': 'El nombre debe tener al menos 5 caracteres',
+          'name_max_length': 'El nombre debe tener menos de 40 caracteres',
+          'name_already_in_use': 'Este nombre ya está en uso',
+          'error_checking_name':
+              'Error al verificar la disponibilidad del nombre',
+          'enter_display_name':
+              'Por favor, ingrese un nombre para mostrar en inglés',
+          'create_user_failed':
+              'Error al crear usuario. Por favor, inténtelo de nuevo.',
+          'unexpected_error':
+              'Ocurrió un error inesperado. Por favor, inténtelo de nuevo.',
+          // Nickname already taken
+          'nickname_taken': 'El apodo que ingresaste ya está en uso.',
           // Pantalla de inicio
           'home': 'Inicio',
           'friends': 'Amigos',

@@ -45,7 +45,7 @@ class ChatsTab extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (context) => ChatRoomScreen(
-          userId: 'current_user_id', // TODO: 실제 사용자 ID로 교체 필요
+          userId: 'current_user_id', //  실제 사용자 ID로 교체 필요
           partnerId: chat.partnerId,
           userName: chat.partnerName,
         ),

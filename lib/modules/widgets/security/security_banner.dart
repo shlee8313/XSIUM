@@ -17,8 +17,9 @@ class SecurityBanner extends StatelessWidget {
             vertical: 8,
           ),
           color: themeController.isDarkMode.value
-              ? Colors.blue.withOpacity(0.2)
-              : Colors.blue.withOpacity(0.1),
+              ? const Color(0x332196F3) //blueOpacity20 = Color(0x332196F3);
+              : const Color(
+                  0x1A2196F3), //Color blueOpacity10 = Color(0x1A2196F3);
           child: Row(
             children: [
               Icon(

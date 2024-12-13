@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:xsium_chat/config/theme.dart';
 import '../../core/controllers/theme_controller.dart';
 import '../../core/controllers/language_controller.dart';
 import '../coins/coin_balance_widget.dart';
@@ -11,7 +12,8 @@ import '../widgets/avartar/avatar.dart';
 import './language_setting.dart';
 
 class CommonSettingsSheet extends StatelessWidget {
-  const CommonSettingsSheet({super.key});
+  final _userSession = UserSession();
+  CommonSettingsSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -35,19 +37,25 @@ class CommonSettingsSheet extends StatelessWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisAlignment: MainAxisAlignment.start, // 시작 정렬로 변경
                       children: [
                         IconButton(
                           icon: Icon(Icons.arrow_back,
                               color: colorScheme.onSurface),
                           onPressed: () => Navigator.pop(context),
                         ),
-                        Avatar(),
-                        Text(
-                          "홍길동",
-                          style: theme.textTheme.titleLarge,
+                        const SizedBox(width: 16), // 아이콘과 아바타 사이 간격 조정
+                        Avatar(size: 36),
+                        const SizedBox(width: 8), // Avatar와 Text 사이 간격 조정
+                        Expanded(
+                          child: Text(
+                            _userSession.displayName ?? 'User',
+                            style: theme.textTheme.titleLarge,
+                            overflow: TextOverflow.ellipsis, // 긴 이름이 잘리지 않도록 처리
+                          ),
                         ),
-                        const SizedBox(width: 40),
+                        const SizedBox(
+                            width: 16), // Text와 CoinBalanceWidget 간격 조정
                         const CoinBalanceWidget(),
                       ],
                     ),
@@ -138,16 +146,17 @@ class CommonSettingsSheet extends StatelessWidget {
         style: titleStyle ?? theme.textTheme.titleMedium,
       ),
       subtitle: subtitle,
-      trailing: Icon(
+      trailing: const Icon(
         Icons.arrow_forward_ios,
         size: 16,
-        color: theme.colorScheme.onSurface.withOpacity(0.5),
+        color: AppColors.onSurfaceLight50,
       ),
       onTap: onTap,
     );
   }
 
   void _showLanguageSettings(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -168,8 +177,9 @@ class CommonSettingsSheet extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color:
-                      Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                  color: isDark
+                      ? AppColors.bottomSheetHandleDark
+                      : AppColors.bottomSheetHandleLight,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),

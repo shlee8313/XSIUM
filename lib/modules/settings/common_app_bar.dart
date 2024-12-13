@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 // import 'package:get/get.dart';
 // import '../../core/controllers/theme_controller.dart';
 import 'common_settings_sheet.dart'; // CommonSettingsSheet import 추가
+import '../widgets/avartar/avatar.dart';
+import '../../core/session/user_session.dart';
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final List<Widget>? additionalActions;
+  final _userSession = UserSession();
 
-  const CommonAppBar({
+  CommonAppBar({
     super.key,
     required this.title,
     this.additionalActions,
@@ -22,7 +25,15 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         AppBar(
-          title: Text(title),
+          title: Row(
+            children: [
+              const SizedBox(width: 14),
+              Avatar(size: 32), // 크기 줄임
+              const SizedBox(width: 8),
+              Text(_userSession.displayName ?? 'User'),
+            ],
+          ),
+          titleSpacing: 8,
           automaticallyImplyLeading: false,
           backgroundColor: theme.colorScheme.surface,
           actions: [
@@ -36,7 +47,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
                   Navigator.of(context).push(
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) =>
-                          const CommonSettingsSheet(),
+                          CommonSettingsSheet(),
                       opaque: false,
                       transitionsBuilder:
                           (context, animation, secondaryAnimation, child) {

@@ -4,10 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
+
 import 'dart:developer' as developer;
 import 'app.dart';
 import 'config/app_config.dart';
 import 'core/session/user_session.dart';
+import './core/controllers/theme_controller.dart';
+import './services/supabase_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,11 +32,19 @@ void main() async {
 
   // 앱 초기화 로직
   try {
-    // 필수적인 초기화 작업
-    await Future.wait<void>([
-      dotenv.load(fileName: ".env"),
-      AppConfig.initialize(),
-    ]);
+    // dotenv 먼저 로드
+    developer.log('Attempting to load .env file...');
+    await dotenv.load(fileName: '.env');
+    developer.log('.env loaded successfully');
+
+    // 다른 초기화 작업
+    await AppConfig.initialize();
+    await SupabaseService.initialize();
+
+    // ThemeController 초기화 추가
+    final themeController = Get.put(ThemeController());
+    await themeController.initializeFull();
+    developer.log('AppConfig initialized');
 
     // 나머지 초기화는 마이크로태스크로 백그라운드에서 수행
     Future.microtask(() async {

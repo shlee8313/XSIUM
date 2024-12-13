@@ -23,7 +23,48 @@ class AppColors {
   static const Color success = Color(0xFF4CAF50);
   static const Color error = Color(0xFFFF0000);
   static const Color warning = Color(0xFFFFA500);
+
+  static const Color onPrimaryLight70 =
+      Color(0xB3FFFFFF); // white with 70% opacity
+  static const Color onSurfaceVariantLight70 =
+      Color(0xB3000000); // black with 70% opacity
+  static const Color onSurfaceLight50 =
+      Color(0x80000000); // black with 50% opacity
+  static const Color onSurfaceLight20 =
+      Color(0x33000000); // black with 20% opacity
+
+  // Opacity Colors for Dark Theme
+  static const Color onPrimaryDark70 =
+      Color(0xB3FFFFFF); // white with 70% opacity
+  static const Color onSurfaceVariantDark70 =
+      Color(0xB3FFFFFF); // white with 70% opacity
+  static const Color onSurfaceDark50 =
+      Color(0x80FFFFFF); // white with 50% opacity
+  static const Color onSurfaceDark20 = Color(0x33FFFFFF); // white
+
+  static const Color bottomSheetHandleLight =
+      Color(0x33000000); // black with 20%
+  static const Color bottomSheetHandleDark =
+      Color(0x33FFFFFF); // white with 20%
 }
+
+// extension OpacityColors on ColorScheme {
+//   Color get onPrimary70 => brightness == Brightness.light
+//       ? AppColors.onPrimaryLight70
+//       : AppColors.onPrimaryDark70;
+
+//   Color get onSurfaceVariant70 => brightness == Brightness.light
+//       ? AppColors.onSurfaceVariantLight70
+//       : AppColors.onSurfaceVariantDark70;
+
+//   Color get onSurface50 => brightness == Brightness.light
+//       ? AppColors.onSurfaceLight50
+//       : AppColors.onSurfaceDark50;
+
+//   Color get onSurface20 => brightness == Brightness.light
+//       ? AppColors.onSurfaceLight20
+//       : AppColors.onSurfaceDark20;
+// }
 
 class AppTheme {
   static ThemeData lightTheme = ThemeData(
@@ -148,5 +189,18 @@ class AppTheme {
         fontSize: 14,
       ),
     ),
+  );
+
+  static final ThemeData loginTheme = ThemeData(
+    useMaterial3: true,
+    brightness: Brightness.light,
+    colorScheme: const ColorScheme.light(
+      primary: AppColors.primaryLight,
+      onPrimary: Colors.white,
+      surface: AppColors.surfaceLight,
+      onSurface: Colors.black,
+    ),
+    scaffoldBackgroundColor: AppColors.surfaceLight,
+    // 로그인에 필요한 최소한의 스타일만 정의
   );
 }

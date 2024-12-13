@@ -9,6 +9,8 @@ class UserSession {
 
   // 메모리 내 데이터 저장
   String? _xummAddress;
+  String? _displayName;
+  String? _avatarUrl;
   DateTime? _lastLoginTime;
   bool _isInitialized = false;
 
@@ -18,8 +20,16 @@ class UserSession {
   bool _wasValidLastCheck = true;
   static const sessionTimeout = Duration(hours: 1);
 
-  // XUMM 주소 설정
-  Future<void> setXummAddress(String address) async {
+  // getter 추가
+  String? get displayName => _displayName;
+  String? get avatarUrl => _avatarUrl;
+
+  // XUMM 주소와 함께 사용자 정보 설정
+  Future<void> initializeUserData({
+    required String address,
+    String? displayName,
+    String? avatarUrl,
+  }) async {
     try {
       // 이전 세션 정리
       if (_xummAddress != null && _xummAddress != address) {
@@ -27,18 +37,24 @@ class UserSession {
       }
 
       _xummAddress = address;
+      _displayName = displayName ?? address.substring(0, 8);
+      _avatarUrl = avatarUrl;
       _lastLoginTime = DateTime.now();
       _isInitialized = true;
       _wasValidLastCheck = true;
 
-      developer.log('UserSession: Successfully saved XUMM address in memory');
-
-      // 추가: 상태 검증
+      developer
+          .log('UserSession: Successfully initialized user data in memory');
       _validateState();
     } catch (e) {
       developer.log('Error saving user session: $e');
       rethrow;
     }
+  }
+
+  // XUMM 주소 설정 - 기존 메서드는 하위 호환성을 위해 유지
+  Future<void> setXummAddress(String address) async {
+    await initializeUserData(address: address);
   }
 
   // XUMM 주소 가져오기
@@ -59,7 +75,7 @@ class UserSession {
     return _lastLoginTime;
   }
 
-  // 추가: 세션 상태 검증
+  // 세션 상태 검증
   void _validateState() {
     final now = DateTime.now();
 
@@ -128,6 +144,8 @@ class UserSession {
   // 내부 상태 클리어
   Future<void> _clearInternalState() async {
     _xummAddress = null;
+    _displayName = null;
+    _avatarUrl = null;
     _lastLoginTime = null;
     _isInitialized = false;
     _lastStateCheck = null;
@@ -140,6 +158,8 @@ class UserSession {
     return {
       'isLoggedIn': isLoggedIn,
       'xummAddress': _xummAddress,
+      'displayName': _displayName,
+      'avatarUrl': _avatarUrl,
       'lastLoginTime': _lastLoginTime?.toIso8601String(),
       'isValid': _wasValidLastCheck,
       'isClearing': _isClearing,
@@ -186,7 +206,7 @@ class UserSession {
     return true;
   }
 
-  // 추가: 세션 갱신
+  // 세션 갱신
   Future<void> refreshSession() async {
     if (!isLoggedIn) return;
 
@@ -200,7 +220,7 @@ class UserSession {
     }
   }
 
-  // 추가: 강제 세션 종료
+  // 강제 세션 종료
   Future<void> forceLogout() async {
     developer.log('Force logout requested');
     await clear();

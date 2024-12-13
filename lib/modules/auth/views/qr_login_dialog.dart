@@ -95,11 +95,12 @@ class _QRLoginDialogState extends State<QRLoginDialog> {
 
     widget.controller.onLoginSuccess = (account) {
       if (mounted) {
-        Navigator.of(context, rootNavigator: true).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => HomeScreen(userAddress: account),
-          ),
-        );
+        // Navigator.of(context, rootNavigator: true).pushReplacement(
+        //   MaterialPageRoute(
+        //     builder: (context) => HomeScreen(userAddress: account),
+        //   ),
+        // );
+        Navigator.pop(context); // 다이얼로그만 닫고 LoginController가 화면 전환 처리
       }
     };
   }
@@ -158,7 +159,7 @@ class _QRLoginDialogState extends State<QRLoginDialog> {
                     return Container(
                       width: 200,
                       height: 200,
-                      color: colorScheme.surfaceVariant,
+                      color: colorScheme.surface,
                       child: Center(
                         child: Text(
                           'Failed to load QR code'.tr,

@@ -34,7 +34,8 @@ class InviteListTile extends StatelessWidget {
               BoxShadow(
                 color: themeController.isDarkMode.value
                     ? Colors.black26
-                    : Colors.grey.withOpacity(0.1),
+                    : const Color(
+                        0x1A9E9E9E), // Color greyOpacity10 = Color(0x1A9E9E9E);
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
